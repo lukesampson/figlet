@@ -7,7 +7,7 @@ import (
 	"os"
 	"errors"
 	"io/ioutil"
-	"regexp"
+	//"regexp"
 	"strings"
 	"strconv"
 )
@@ -37,29 +37,34 @@ func findFonts() (string, error) {
 }
 
 func findFont(dir string, font string) (string, error) {
-	for _, ext := range([]string { ".flf", ".tlf" }) {
-		path := filepath.Join(dir, fmt.Sprintf("%v%v", font, ext))
-		if _, err := os.Stat(path); err == nil {
-			return path, nil
-		}
+	if !strings.HasSuffix(font, ".flf") { font += ".flf" }
+	path := filepath.Join(dir, font)
+	if _, err := os.Stat(path); err == nil {
+		return path, nil
 	}
 	return "", fmt.Errorf("couldn't find font %v in %v", font, dir)
 }
 
 type fontHeader struct {
 	hardBlank string
+	height int32
+	baseLine int32
+	maxLength int32
+	oldLayout int32
+	commentLines int32
+	printDirection int32
+	fullLayout int32
 }
 
 func parseHeader(header string) (fontHeader, error) {
 	h := fontHeader {}
 
-	reMagicNum := regexp.MustCompile(`^[ft]lf2.`)
-
-	if !reMagicNum.MatchString(header) {
+	magic_num := "flf2a"
+	if !strings.HasPrefix(header, magic_num) {
 		return h, fmt.Errorf("invalid font header: %v", header)
 	}
 
-	headerParts := strings.Split(reMagicNum.ReplaceAllString(header, ""), " ")
+	headerParts := strings.Split(header[len(magic_num):], " ")
 	h.hardBlank = headerParts[0]
 
 	headerNums := make([]int32, len(headerParts)-1)
@@ -71,19 +76,47 @@ func parseHeader(header string) (fontHeader, error) {
 		headerNums[i] = int32(num)
 	}
 
+	h.height = headerNums[0]
+	h.baseLine = headerNums[1]
+	h.maxLength = headerNums[2]
+	h.oldLayout = headerNums[3]
+	h.commentLines = headerNums[4]
+
+	// these are optional for backwards compatibility
+	if len(headerNums) > 5 { h.printDirection = headerNums[5] }
+	if len(headerNums) > 6 { h.fullLayout = headerNums[6] }
+
+	// if no smush2, decode smush into smush2
+
+
 	return h, nil
 }
 
-func loadFont(file string) (string, error) {
+type font struct {
+	header fontHeader
+	comment string
+	chars [][]string
+}
+
+func loadFont(file string) (font, error) {
+	f := font {}
+
 	bytes, err := ioutil.ReadFile(file)
-	if err != nil { return "", err }
+	if err != nil { return f, err }
 
 	lines := strings.Split(string(bytes), "\n")
 
-	header, err := parseHeader(lines[0])
-	if err != nil { return "", err }
+	f.header, err = parseHeader(lines[0])
+	if err != nil { return f, err }
 
-	fmt.Printf("%v\n", header)
+	f.comment = strings.Join(lines[1:f.header.commentLines+1], "\n")
 
-	return "", nil
+	//height := f.header.height
+	for i := 32; i < 128; i++ {
+		//charlines := make([]string, height)
+	}
+
+	fmt.Println(f)
+	
+	return f, nil
 }
