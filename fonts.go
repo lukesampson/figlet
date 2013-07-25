@@ -12,6 +12,18 @@ import (
 	"strconv"
 )
 
+// smush modes
+const (
+	SMEqual = 1
+	SMLowLine = 2
+	SMHierarchy = 4
+	SMPair = 8
+	SMBigX = 16
+	SMHardBlank = 32
+	SMKern = 64
+	SMSmush = 128
+)
+
 func findFonts() (string, error) {
 	// try <bindir>/fonts
 	bin := os.Args[0]
@@ -50,10 +62,10 @@ type fontHeader struct {
 	height int32
 	baseLine int32
 	maxLength int32
-	oldLayout int32
+	smush int32
 	commentLines int32
 	printDirection int32
-	fullLayout int32
+	smush2 int32
 }
 
 func parseHeader(header string) (fontHeader, error) {
@@ -67,27 +79,35 @@ func parseHeader(header string) (fontHeader, error) {
 	headerParts := strings.Split(header[len(magic_num):], " ")
 	h.hardBlank = headerParts[0]
 
-	headerNums := make([]int32, len(headerParts)-1)
+	nums := make([]int32, len(headerParts)-1)
 	for i, s := range headerParts[1:] {
 		num, err := strconv.ParseInt(s, 10, 32)
 		if err != nil {
 			return h, fmt.Errorf("invalid font header: %v: %v", header, err)
 		}
-		headerNums[i] = int32(num)
+		nums[i] = int32(num)
 	}
 
-	h.height = headerNums[0]
-	h.baseLine = headerNums[1]
-	h.maxLength = headerNums[2]
-	h.oldLayout = headerNums[3]
-	h.commentLines = headerNums[4]
+	h.height = nums[0]
+	h.baseLine = nums[1]
+	h.maxLength = nums[2]
+	h.smush = nums[3]
+	h.commentLines = nums[4]
 
 	// these are optional for backwards compatibility
-	if len(headerNums) > 5 { h.printDirection = headerNums[5] }
-	if len(headerNums) > 6 { h.fullLayout = headerNums[6] }
+	if len(nums) > 5 { h.printDirection = nums[5] }
+	if len(nums) > 6 { h.smush2 = nums[6] }
 
 	// if no smush2, decode smush into smush2
-
+	if len(nums) < 7 {
+		if h.smush == 0 {
+			h.smush2 = SMKern
+		} else if h.smush < 0 {
+			h.smush2 = 0
+		} else {
+			h.smush2 = (h.smush & 31) | SMSmush
+		}
+	}
 
 	return h, nil
 }
