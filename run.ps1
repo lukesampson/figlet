@@ -1,1 +1,1 @@
-go run (ls *.go | % { $_.name })
+go run (ls *.go | % { $_.name }) testing
