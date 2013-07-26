@@ -24,6 +24,17 @@ const (
 	SMSmush = 128
 )
 
+var deutsch = []rune { 196, 214, 220, 228, 246, 252, 223 };
+  /* Latin-1 codes for German letters, respectively:
+     LATIN CAPITAL LETTER A WITH DIAERESIS = A-umlaut
+     LATIN CAPITAL LETTER O WITH DIAERESIS = O-umlaut
+     LATIN CAPITAL LETTER U WITH DIAERESIS = U-umlaut
+     LATIN SMALL LETTER A WITH DIAERESIS = a-umlaut
+     LATIN SMALL LETTER O WITH DIAERESIS = o-umlaut
+     LATIN SMALL LETTER U WITH DIAERESIS = u-umlaut
+     LATIN SMALL LETTER SHARP S = ess-zed
+  */
+
 func findFonts() (string, error) {
 	// try <bindir>/fonts
 	bin := os.Args[0]
@@ -58,10 +69,10 @@ func findFont(dir string, font string) (string, error) {
 }
 
 type fontHeader struct {
-	hardBlank string
-	height int32
+	hardblank string
+	charheight int32
 	baseLine int32
-	maxLength int32
+	maxlen int32
 	smush int32
 	commentLines int32
 	printDirection int32
@@ -77,7 +88,7 @@ func parseHeader(header string) (fontHeader, error) {
 	}
 
 	headerParts := strings.Split(header[len(magic_num):], " ")
-	h.hardBlank = headerParts[0]
+	h.hardblank = headerParts[0]
 
 	nums := make([]int32, len(headerParts)-1)
 	for i, s := range headerParts[1:] {
@@ -88,9 +99,9 @@ func parseHeader(header string) (fontHeader, error) {
 		nums[i] = int32(num)
 	}
 
-	h.height = nums[0]
+	h.charheight = nums[0]
 	h.baseLine = nums[1]
-	h.maxLength = nums[2]
+	h.maxlen = nums[2]
 	h.smush = nums[3]
 	h.commentLines = nums[4]
 
@@ -131,12 +142,18 @@ func loadFont(file string) (font, error) {
 
 	f.comment = strings.Join(lines[1:f.header.commentLines+1], "\n")
 
-	//height := f.header.height
-	for i := 32; i < 128; i++ {
-		//charlines := make([]string, height)
+	// charheight := f.header.charheight
+	for ord := ' '; ord < '~'; ord++ {
+		fmt.Printf("%v\n", strconv.QuoteRune(ord))
+		//charlines := make([]string, charheight)
 	}
 
-	fmt.Println(f)
+	// 7 german characters
+	for i := 0; i <=6; i++ {
+		fmt.Printf("%v\n", strconv.QuoteRune(deutsch[i]))
+	}
+
+	fmt.Printf("%v\n", f)
 	
 	return f, nil
 }
