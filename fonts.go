@@ -70,13 +70,13 @@ func findFont(dir string, font string) (string, error) {
 
 type fontHeader struct {
 	hardblank string
-	charheight int32
-	baseLine int32
-	maxlen int32
-	smush int32
-	commentLines int32
-	printDirection int32
-	smush2 int32
+	charheight int
+	baseLine int
+	maxlen int
+	smush int
+	commentLines int
+	printDirection int
+	smush2 int
 }
 
 func parseHeader(header string) (fontHeader, error) {
@@ -90,13 +90,13 @@ func parseHeader(header string) (fontHeader, error) {
 	headerParts := strings.Split(header[len(magic_num):], " ")
 	h.hardblank = headerParts[0]
 
-	nums := make([]int32, len(headerParts)-1)
+	nums := make([]int, len(headerParts)-1)
 	for i, s := range headerParts[1:] {
 		num, err := strconv.ParseInt(s, 10, 32)
 		if err != nil {
 			return h, fmt.Errorf("invalid font header: %v: %v", header, err)
 		}
-		nums[i] = int32(num)
+		nums[i] = int(num)
 	}
 
 	h.charheight = nums[0]
@@ -126,7 +126,11 @@ func parseHeader(header string) (fontHeader, error) {
 type font struct {
 	header fontHeader
 	comment string
-	chars [][]string
+	chars map[rune] []string
+}
+
+func loadChar(lines []string, currline int, height int) []string {
+	return nil
 }
 
 func loadFont(file string) (font, error) {
@@ -142,10 +146,21 @@ func loadFont(file string) (font, error) {
 
 	f.comment = strings.Join(lines[1:f.header.commentLines+1], "\n")
 
-	// charheight := f.header.charheight
+	// parse characters...
+	f.chars = make(map[rune] []string)
+	charheight := int(f.header.charheight)
+	currline := int(f.header.commentLines)+1
+	
+	// allocate 0, the 'missing' character
+	f.chars[0] = make([]string, charheight)
+	for i := 0; i < charheight; i++ {
+		f.chars[0][i] = ""
+	}
+
 	for ord := ' '; ord < '~'; ord++ {
 		fmt.Printf("%v\n", strconv.QuoteRune(ord))
-		//charlines := make([]string, charheight)
+		f.chars[ord] = loadChar(lines, currline, charheight)
+		currline += charheight
 	}
 
 	// 7 german characters
