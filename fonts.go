@@ -123,12 +123,6 @@ func readHeader(header string) (fontHeader, error) {
 	return h, nil
 }
 
-type font struct {
-	header fontHeader
-	comment string
-	chars map[rune] []string
-}
-
 func readFontChar(lines []string, currline int, height int) []string {
 	char := make([]string, height)
 	for row := 0; row < height; row++ {
@@ -152,6 +146,12 @@ func readFontChar(lines []string, currline int, height int) []string {
 	return char
 }
 
+type font struct {
+	header fontHeader
+	comment string
+	chars map[rune] []string
+}
+
 func readFont(file string) (font, error) {
 	f := font {}
 
@@ -165,7 +165,6 @@ func readFont(file string) (font, error) {
 
 	f.comment = strings.Join(lines[1:f.header.commentLines+1], "\n")
 
-	// parse characters...
 	f.chars = make(map[rune] []string)
 	charheight := int(f.header.charheight)
 	currline := int(f.header.commentLines)+1
@@ -176,16 +175,29 @@ func readFont(file string) (font, error) {
 		f.chars[0][i] = ""
 	}
 
-	for ord := ' '; ord < '~'; ord++ {
+	// standard ASCII characters
+	for ord := ' '; ord <= '~'; ord++ {
 		f.chars[ord] = readFontChar(lines, currline, charheight)
 		currline += charheight
 	}
 
 	// 7 german characters
-	for i := 0; i <=6; i++ {
+	for i := 0; i < 7; i++ {
 		f.chars[deutsch[i]] = readFontChar(lines, currline, charheight)
 		currline += charheight
 	}
+
+	// code-tagged characters
+	for currline < len(lines) {
+		var code int;
+		_, err := fmt.Sscan(lines[currline], &code)
+		if err != nil { break }
+		currline++
+		f.chars[rune(code)] = readFontChar(lines, currline, charheight)
+
+		currline += charheight
+	}
+
 	
 	return f, nil
 }
