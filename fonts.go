@@ -1,15 +1,15 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"go/build"
-	"path/filepath"
-	"os"
-	"errors"
 	"io/ioutil"
-	//"regexp"
-	"strings"
+	"os"
+	"path/filepath"
+	"regexp"
 	"strconv"
+	"strings"
 )
 
 // smush modes
@@ -26,13 +26,13 @@ const (
 
 var deutsch = []rune { 196, 214, 220, 228, 246, 252, 223 };
   /* Latin-1 codes for German letters, respectively:
-     LATIN CAPITAL LETTER A WITH DIAERESIS = A-umlaut
-     LATIN CAPITAL LETTER O WITH DIAERESIS = O-umlaut
-     LATIN CAPITAL LETTER U WITH DIAERESIS = U-umlaut
-     LATIN SMALL LETTER A WITH DIAERESIS = a-umlaut
-     LATIN SMALL LETTER O WITH DIAERESIS = o-umlaut
-     LATIN SMALL LETTER U WITH DIAERESIS = u-umlaut
-     LATIN SMALL LETTER SHARP S = ess-zed
+	 LATIN CAPITAL LETTER A WITH DIAERESIS = A-umlaut
+	 LATIN CAPITAL LETTER O WITH DIAERESIS = O-umlaut
+	 LATIN CAPITAL LETTER U WITH DIAERESIS = U-umlaut
+	 LATIN SMALL LETTER A WITH DIAERESIS = a-umlaut
+	 LATIN SMALL LETTER O WITH DIAERESIS = o-umlaut
+	 LATIN SMALL LETTER U WITH DIAERESIS = u-umlaut
+	 LATIN SMALL LETTER SHARP S = ess-zed
   */
 
 func findFonts() (string, error) {
@@ -79,7 +79,7 @@ type fontHeader struct {
 	smush2 int
 }
 
-func parseHeader(header string) (fontHeader, error) {
+func readHeader(header string) (fontHeader, error) {
 	h := fontHeader {}
 
 	magic_num := "flf2a"
@@ -129,11 +129,30 @@ type font struct {
 	chars map[rune] []string
 }
 
-func loadChar(lines []string, currline int, height int) []string {
-	return nil
+func readFontChar(lines []string, currline int, height int) []string {
+	char := make([]string, height)
+	for row := 0; row < height; row++ {
+		line := lines[currline+row]
+		
+		k := len(line) - 1
+
+		// remove any trailing whitespace after end char
+		ws := regexp.MustCompile(`\s`)
+		for k > 0 && ws.MatchString(line[k:k+1]) { k-- }
+
+		if k > 0 {
+			// remove end marks
+			endchar := line[k]
+			for k > 0 && line[k] == endchar { k-- }
+		}
+
+		char[row] = line[:k+1]
+	}
+
+	return char
 }
 
-func loadFont(file string) (font, error) {
+func readFont(file string) (font, error) {
 	f := font {}
 
 	bytes, err := ioutil.ReadFile(file)
@@ -141,7 +160,7 @@ func loadFont(file string) (font, error) {
 
 	lines := strings.Split(string(bytes), "\n")
 
-	f.header, err = parseHeader(lines[0])
+	f.header, err = readHeader(lines[0])
 	if err != nil { return f, err }
 
 	f.comment = strings.Join(lines[1:f.header.commentLines+1], "\n")
@@ -158,17 +177,15 @@ func loadFont(file string) (font, error) {
 	}
 
 	for ord := ' '; ord < '~'; ord++ {
-		fmt.Printf("%v\n", strconv.QuoteRune(ord))
-		f.chars[ord] = loadChar(lines, currline, charheight)
+		f.chars[ord] = readFontChar(lines, currline, charheight)
 		currline += charheight
 	}
 
 	// 7 german characters
 	for i := 0; i <=6; i++ {
-		fmt.Printf("%v\n", strconv.QuoteRune(deutsch[i]))
+		f.chars[deutsch[i]] = readFontChar(lines, currline, charheight)
+		currline += charheight
 	}
-
-	fmt.Printf("%v\n", f)
 	
 	return f, nil
 }

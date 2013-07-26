@@ -24,9 +24,12 @@ func main() {
 		fmt.Println(err); os.Exit(1)
 	}
 	
-	_, err = loadFont(fontpath)
+	font, err := readFont(fontpath)
 	if err != nil {
 		fmt.Println(err); os.Exit(1)
 	}
+
+	//fmt.Println(font.chars['a'])
+	fmt.Println(font)
 
 }
