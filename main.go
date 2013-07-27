@@ -27,6 +27,16 @@ func printusage() {
 	fmt.Println("              [ -C controlfile ] [ -I infocode ] [ message ]")
 }
 
+// gets the font entry for the given character, or the 'missing'
+// character if the font doesn't contain this character
+func getletter(c rune, f font) []string {
+	 l, ok := f.chars[c]
+	 if !ok {
+	 	l = f.chars[0]
+	 }
+	 return l
+}
+
 func main() {
 	fontsdir, err := findFonts()
 	if err != nil {
@@ -39,7 +49,7 @@ func main() {
 		fmt.Println(err); os.Exit(1)
 	}
 	
-	_, err = readFont(fontpath)
+	f, err := readFont(fontpath)
 	if err != nil {
 		fmt.Println(err); os.Exit(1)
 	}
@@ -48,6 +58,8 @@ func main() {
 
 	for _, c:= range message {
 		fmt.Println(string(c))
+		l := getletter(c, f)
+		fmt.Println(l)
 	}
 
 }
