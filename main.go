@@ -29,13 +29,17 @@ func printusage() {
 
 // gets the font entry for the given character, or the 'missing'
 // character if the font doesn't contain this character
-func getletter(c rune, f font) []string {
+func getChar(c rune, f font) []string {
 	 l, ok := f.chars[c]
 	 if !ok {
 	 	l = f.chars[0]
 	 }
 	 return l
 }
+
+//func getLines(f font, msg string) [][]string {
+
+//}
 
 func main() {
 	fontsdir, err := findFonts()
@@ -54,12 +58,15 @@ func main() {
 		fmt.Println(err); os.Exit(1)
 	}
 
-	message := os.Args[1]
+	msg := os.Args[1]
 
-	for _, c:= range message {
+	for _, c:= range msg {
 		fmt.Println(string(c))
-		l := getletter(c, f)
-		fmt.Println(l)
+		l := getChar(c, f)
+
+		for _, line := range l {
+			fmt.Println(line)
+		}	
 	}
 
 }
