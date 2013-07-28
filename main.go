@@ -38,6 +38,10 @@ func getChar(c rune, f font) []string {
 	 return l
 }
 
+func smushem(lch rune, rch rune, smushmode int) (rune, bool) {
+	return 0, false
+}
+
 // returns true if the word could be added to the line
 func addWord(f font, word string, line []string) bool {
 	return false
