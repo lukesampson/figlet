@@ -1,3 +1,9 @@
+package main
+
+import (
+	"strings"
+)
+
 // gets the font entry for the given character, or the 'missing'
 // character if the font doesn't contain this character
 func getChar(c rune, f font) []string {
