@@ -4,6 +4,18 @@ import (
 	"strings"
 )
 
+// smush modes
+const (
+	SMEqual = 1
+	SMLowLine = 2
+	SMHierarchy = 4
+	SMPair = 8
+	SMBigX = 16
+	SMHardBlank = 32
+	SMKern = 64
+	SMSmush = 128
+)
+
 // gets the font entry for the given character, or the 'missing'
 // character if the font doesn't contain this character
 func getChar(c rune, f font) []string {
@@ -15,6 +27,15 @@ func getChar(c rune, f font) []string {
 }
 
 func smushem(lch rune, rch rune, smushmode int) (rune, bool) {
+	if lch == ' ' { return rch, true }
+	if rch == ' ' { return lch, true }
+
+	if smushmode & SMSmush == 0 { return 0, false }
+
+	if smushmode & 63 == 0 {
+		// This is smushing by universal overlapping.
+		
+	}
 	return 0, false
 }
 

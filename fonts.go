@@ -12,18 +12,6 @@ import (
 	"strings"
 )
 
-// smush modes
-const (
-	SMEqual = 1
-	SMLowLine = 2
-	SMHierarchy = 4
-	SMPair = 8
-	SMBigX = 16
-	SMHardBlank = 32
-	SMKern = 64
-	SMSmush = 128
-)
-
 var deutsch = []rune { 196, 214, 220, 228, 246, 252, 223 };
   /* Latin-1 codes for German letters, respectively:
 	 LATIN CAPITAL LETTER A WITH DIAERESIS = A-umlaut
