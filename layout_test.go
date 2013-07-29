@@ -1,6 +1,20 @@
 package main
 
-import "testing"
+func validFlags() int[] {
+	flags := make(int[], 0, 36)
+	for i := 1; i <= 128; i *= 2 {
+		append(flags, i)
+		for j := 1; j < i; j *= 2 {
+			append(flags, i+j)
+		}
+	}
+}
+
+func TestValidFlags(t * testing.T) {
+	for _, f := range(validFlags()) {
+		t.log(f)
+	}
+}
 
 func TestSmushem_LChrEmpty_Always_Returns_Rchr(t *testing.T) {
 	lchr := ' '
