@@ -2,6 +2,7 @@ package main
 
 import (
 	"strings"
+	//"fmt"
 )
 
 // smush modes
@@ -26,17 +27,30 @@ func getChar(c rune, f font) []string {
 	 return l
 }
 
-func smushem(lch rune, rch rune, smushmode int) (rune, bool) {
-	if lch == ' ' { return rch, true }
-	if rch == ' ' { return lch, true }
+func smushem(lch rune, rch rune, mode int, hardblank rune, rtol bool) rune {
+	if lch == ' ' { return rch }
+	if rch == ' ' { return lch }
 
-	if smushmode & SMSmush == 0 { return 0, false }
-
-	if smushmode & 63 == 0 {
-		// This is smushing by universal overlapping.
-		
+	if mode & SMSmush == 0 { // smush not enabled
+		return 0
 	}
-	return 0, false
+
+	if mode & SMKern == 0 { // smush but not kern
+		// This is smushing by universal overlapping
+
+		// ensure overlapping preference to visible chars (spaces handled already)
+		if lch == hardblank { return rch }
+		if rch == hardblank { return lch }
+
+		// ensure dominant char overlaps, depending on right-to-left parameter
+		if rtol { return lch }
+		return rch
+	}
+
+	if mode & SMHardBlank == SMHardBlank {
+		if lch == hardblank && rch == hardblank { return hardblank }
+	}
+	return 0
 }
 
 // returns true if the word could be added to the line
@@ -54,7 +68,7 @@ func nextLine(f font, msg string, width int) ([]string, string) {
 		} else if i == 0 { // word longer than line
 			panic("forced word break not implemented")
 		} else {
-			break 
+			break
 		}
 	}
 	return line, msg

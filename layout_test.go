@@ -2,29 +2,56 @@ package main
 
 import "testing"
 
-func Test_smush_with_lchr_empty_always_returns_rchr(t *testing.T) {
-	rchrs := []rune { 'a', '!', '$' }
-	for _, rchr := range rchrs {
-		testSmushemAllSmushModes(t, ' ', rchr, rchr)
+func Test_smush_with_lch_empty_always_returns_rch(t *testing.T) {
+	rchs := []rune { 'a', '!', '$' }
+	for _, rch := range rchs {
+		testSmushemAllSmushModes(t, ' ', rch, rch)
 	}
 }
 
-func Test_smush_with_rchr_empty_always_returns_lchr(t *testing.T) {
-	lchrs := []rune { 'a', '!', '$' }
-	for _, lchr := range lchrs {
-		testSmushemAllSmushModes(t, lchr, ' ', lchr)
+func Test_smush_with_rch_empty_always_returns_lch(t *testing.T) {
+	lchs := []rune { 'a', '!', '$' }
+	for _, lch := range lchs {
+		testSmushemAllSmushModes(t, lch, ' ', lch)
 	}
 }
 
-func Test_smush_with_smush_not_set_returns_false(t *testing.T) {
-	lchr, rchr, smushmode := '|', '|', 0
-	if x, ok := smushem(lchr, rchr, smushmode); ok != false {
-		t.Errorf("smushem(%q, %q, %v) = (%q, %v), want (?, false)", lchr, rchr, smushmode, x, ok)
+func Test_smush_with_smush_not_set_returns_null(t *testing.T) {
+	lch, rch, smushmode := '|', '|', 0
+	if x := smushem(lch, rch, smushmode, '$', false); x != 0 {
+		t.Errorf("smushem(%q, %q, %v) = %q, want %q", lch, rch, smushmode, x, 0)
 	}
 }
 
 func Test_smush_universal(t *testing.T) {
-	//lchr, rchr, smushmode := ''
+	// smush mode of SMSmush but not SMKern is universal smushing
+	lch, rch, mode, hblank, rtol := '|', '$', SMSmush, '$', false
+
+	if x := smushem(lch, rch, mode, hblank, rtol); x != lch {
+		t.Errorf("universal smush should return lch when rch is hardblank, returned %q", x)
+	}
+
+	lch, rch = rch, lch // swap
+	if x := smushem(lch, rch, mode, hblank, rtol); x != rch {
+		t.Errorf("universal smush should return rch when lch is hardblank, returned %q", x)
+	}
+
+	lch, rch = 'l', 'r'
+	if x := smushem(lch, rch, mode, hblank, true); x != lch {
+		t.Errorf("universal smush should return lch when right2left, returned %q", x)
+	}
+
+	if x := smushem(lch, rch, mode, hblank, false); x != rch {
+		t.Errorf("universal smush should return rch when !right2left, returned %q", x)
+	}
+}
+
+func Test_smush_combines_hardblanks_when_SMHardBlank(t *testing.T) {
+	mode := SMSmush + SMKern + SMHardBlank
+
+	if x := smushem('$', '$', mode, '$', false); x != '$' {
+		t.Errorf("universal smush should smush 2 hardblanks to 1, returned %q", x)
+	}
 }
 
 func validSmushModes() []int {
@@ -48,10 +75,10 @@ func smushModes() []int {
 	return modes
 }
 
-func testSmushemAllSmushModes(t *testing.T, lchr rune, rchr rune, expect rune) {
+func testSmushemAllSmushModes(t *testing.T, lch rune, rch rune, expect rune) {
 	for _, smushmode := range smushModes() {
-		if x, ok := smushem(lchr, rchr, smushmode); x != expect {
-			t.Errorf("smushem(%q, %q, %v) = (%q, %v), want %q", lchr, rchr, smushmode, x, ok, expect)
+		if x := smushem(lch, rch, smushmode, '$', false); x != expect {
+			t.Errorf("smushem(%q, %q, %v...) = %q, want %q", lch, rch, smushmode, x, expect)
 		}
 	}
 }
