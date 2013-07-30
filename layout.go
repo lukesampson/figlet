@@ -96,6 +96,11 @@ func getChar(c rune, f font) []string {
 	 return l
 }
 
+type figWord struct {
+	art []string
+	text string
+}
+
 func getWord(w string, f font) []string {
 	word := make([]string, f.header.charheight)
 	for _, c := range w {
@@ -110,9 +115,9 @@ func getWord(w string, f font) []string {
 }
 
 func getWords(msg string, f font) [][]string {
-	words := make([][]string, 0)
+	words := make([]figWord, 0)
 	for _, word := range strings.Split(msg, " ") {
-		words = append(words, getWord(word, f))
+		words = append(words, figWord { text = word, art = getWord(word, f) })
 	}
 	return words
 }
