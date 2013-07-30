@@ -12,16 +12,8 @@ import (
 	"strings"
 )
 
+// Ä Ö Ü ä ö ü ß
 var deutsch = []rune { 196, 214, 220, 228, 246, 252, 223 };
-  /* Latin-1 codes for German letters, respectively:
-	 LATIN CAPITAL LETTER A WITH DIAERESIS = A-umlaut
-	 LATIN CAPITAL LETTER O WITH DIAERESIS = O-umlaut
-	 LATIN CAPITAL LETTER U WITH DIAERESIS = U-umlaut
-	 LATIN SMALL LETTER A WITH DIAERESIS = a-umlaut
-	 LATIN SMALL LETTER O WITH DIAERESIS = o-umlaut
-	 LATIN SMALL LETTER U WITH DIAERESIS = u-umlaut
-	 LATIN SMALL LETTER SHARP S = ess-zed
-  */
 
 func findFonts() (string, error) {
 	// try <bindir>/fonts
