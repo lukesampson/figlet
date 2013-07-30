@@ -28,29 +28,57 @@ func Test_smush_universal(t *testing.T) {
 	lch, rch, mode, hblank, rtol := '|', '$', SMSmush, '$', false
 
 	if x := smushem(lch, rch, mode, hblank, rtol); x != lch {
-		t.Errorf("universal smush should return lch when rch is hardblank, returned %q", x)
+		t.Errorf("should return lch when rch is hardblank, returned %q", x)
 	}
 
 	lch, rch = rch, lch // swap
 	if x := smushem(lch, rch, mode, hblank, rtol); x != rch {
-		t.Errorf("universal smush should return rch when lch is hardblank, returned %q", x)
+		t.Errorf("should return rch when lch is hardblank, returned %q", x)
 	}
 
 	lch, rch = 'l', 'r'
 	if x := smushem(lch, rch, mode, hblank, true); x != lch {
-		t.Errorf("universal smush should return lch when right2left, returned %q", x)
+		t.Errorf("should return lch when right2left, returned %q", x)
 	}
 
 	if x := smushem(lch, rch, mode, hblank, false); x != rch {
-		t.Errorf("universal smush should return rch when !right2left, returned %q", x)
+		t.Errorf("should return rch when !right2left, returned %q", x)
 	}
 }
 
-func Test_smush_combines_hardblanks_when_SMHardBlank(t *testing.T) {
+func Test_smush_combines_2_hardblanks_when_SMHardBlank(t *testing.T) {
 	mode := SMSmush + SMKern + SMHardBlank
 
 	if x := smushem('$', '$', mode, '$', false); x != '$' {
-		t.Errorf("universal smush should smush 2 hardblanks to 1, returned %q", x)
+		t.Errorf("should smush 2 hardblanks to 1, returned %q", x)
+	}
+}
+
+func Test_smush_doesnt_combine_any_hardblank_when_not_SMHardBlank(t *testing.T) {
+	mode := SMSmush + SMKern
+
+	if x := smushem('$', '|', mode, '$', false); x != 0 {
+		t.Errorf("returned %q", x)
+	}
+}
+
+func Test_smush_equal(t *testing.T) {
+	if x := smushem('x', 'x', SMSmush + SMKern + SMEqual, '$', false); x != 'x' {
+		t.Errorf("expected 'x', returned %q", x)
+	}
+}
+
+func Test_smush_lowline(t *testing.T) {
+	low, mode, hblank, rtol := '_', SMSmush + SMKern + SMLowLine, '$', false
+	replacements := "|/\\[]{}()<>"
+	for _, r := range replacements {
+		if x := smushem(low, r, mode, hblank, rtol); x != r {
+			t.Errorf("smush %q with %q should return %q, returned %q", low, r, r, x)
+		}
+
+		if x := smushem(r, low, mode, hblank, rtol); x != r {
+			t.Errorf("smush %q with %q should return %q, returned %q", r, low, r, x)
+		}
 	}
 }
 

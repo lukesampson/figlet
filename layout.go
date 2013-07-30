@@ -50,6 +50,17 @@ func smushem(lch rune, rch rune, mode int, hardblank rune, rtol bool) rune {
 	if mode & SMHardBlank == SMHardBlank {
 		if lch == hardblank && rch == hardblank { return hardblank }
 	}
+
+	if lch == hardblank || rch == hardblank { return 0 }
+
+	if mode & SMEqual == SMEqual {
+		if lch == rch { return lch }
+	}
+
+	if mode & SMLowLine == SMLowLine {
+		if lch == '_' && strings.ContainsRune("|/\\[]{}()<>", rch) { return rch }
+		if rch == '_' && strings.ContainsRune("|/\\[]{}()<>", lch) { return lch }
+	}
 	return 0
 }
 
