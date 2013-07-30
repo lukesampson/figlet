@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 const (
@@ -52,7 +53,7 @@ func main() {
 		fmt.Println(err); os.Exit(1)
 	}
 
-	msg := os.Args[1]
+	msg := strings.Join(os.Args[1:], " ")
 
 	printLines(getLines(msg, f, 80))
 
