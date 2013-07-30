@@ -69,16 +69,39 @@ func Test_smush_equal(t *testing.T) {
 }
 
 func Test_smush_lowline(t *testing.T) {
-	low, mode, hblank, rtol := '_', SMSmush + SMKern + SMLowLine, '$', false
 	replacements := "|/\\[]{}()<>"
 	for _, r := range replacements {
-		if x := smushem(low, r, mode, hblank, rtol); x != r {
-			t.Errorf("smush %q with %q should return %q, returned %q", low, r, r, x)
-		}
+		testSmushLowLine('_', r, r, t)
+		testSmushLowLine(r, '_', r, t)
+	}
+}
 
-		if x := smushem(r, low, mode, hblank, rtol); x != r {
-			t.Errorf("smush %q with %q should return %q, returned %q", r, low, r, x)
-		}
+func Test_smush_heirarchy(t *testing.T) {
+	testSmushHierarchy('|', '\\', '\\', t)
+	testSmushHierarchy('}', '|', '}', t)
+
+	testSmushHierarchy('/', '>', '>', t)
+	testSmushHierarchy('{', '\\', '{', t)
+
+	testSmushHierarchy('[', '(', '(', t)
+	testSmushHierarchy('>', ']', '>', t)
+
+	testSmushHierarchy('}', ')', ')', t)
+	testSmushHierarchy('<', '{', '<', t)
+
+	testSmushHierarchy('(', '<', '<', t)
+	testSmushHierarchy('>', '(', '>', t)
+}
+
+func testSmushLowLine(l rune, r rune, expect rune, t *testing.T) {
+	testSmush(l, r, SMKern + SMSmush + SMLowLine, expect, t)
+}
+func testSmushHierarchy(l rune, r rune, expect rune, t *testing.T) {
+	testSmush(l, r, SMKern + SMSmush + SMHierarchy, expect, t)
+}
+func testSmush(l rune, r rune, mode int, expect rune, t *testing.T) {
+	if x := smushem(l, r, mode, '$', false); x != expect {
+		t.Errorf("smush %q + %q => %q, want %q", l, r, x, expect)
 	}
 }
 

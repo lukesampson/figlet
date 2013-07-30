@@ -61,6 +61,17 @@ func smushem(lch rune, rch rune, mode int, hardblank rune, rtol bool) rune {
 		if lch == '_' && strings.ContainsRune("|/\\[]{}()<>", rch) { return rch }
 		if rch == '_' && strings.ContainsRune("|/\\[]{}()<>", lch) { return lch }
 	}
+
+	if mode & SMHierarchy == SMHierarchy {
+		hrchy := []string { "|", "/\\", "[]", "{}", "()", "<>" } // low -> high precedence
+		inHrchy := func(low rune, high rune, i int) bool {
+			return strings.ContainsRune(hrchy[i], low) && strings.ContainsRune(strings.Join(hrchy[i+1:], ""), high)
+		}
+		for i, _ := range hrchy {
+			if inHrchy(lch, rch, i) { return rch }
+			if inHrchy(rch, lch, i) { return lch }
+		}
+	}
 	return 0
 }
 
