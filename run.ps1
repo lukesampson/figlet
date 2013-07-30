@@ -1,1 +1,1 @@
-go run (ls *.go | % { $_.name }) @args
+go run (ls *.go | ? name -notmatch '_test.go$' | % { $_.name }) @args
