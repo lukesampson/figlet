@@ -90,6 +90,12 @@ func smushem(lch rune, rch rune, mode int, hardblank rune, rtol bool) rune {
 	return 0
 }
 
+// smushamt returns the maximum amount that the character can be smushed
+// into the line.
+func smushamt(char []string, line []string, smushmode int, rtol bool) int {
+	return 0
+}
+
 // returns true if the word could be added to the line
 func addWord(f font, word string, line []string) bool {
 	return false
