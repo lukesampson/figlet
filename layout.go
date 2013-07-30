@@ -126,7 +126,7 @@ func getLines(msg string, f font, width int) [][]string {
 	lines[0] = make([]string, f.header.charheight)
 
 	// smoodge everything together for testing
-	for i, word := range words {
+	for _, word := range words {
 		for j, wordline := range word {
 			lines[0][j] += wordline
 		}
