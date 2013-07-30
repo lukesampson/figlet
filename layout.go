@@ -109,11 +109,10 @@ func getWord(w string, f font) []string {
 	return word
 }
 
-func getWordsWrapped(msg string, f font) [][]string {
+func getWords(msg string, f font) [][]string {
 	words := make([][]string, 0)
-	for _, word_str := range strings.Split(msg, " ") {
-		word := getWord(word_str, f)
-		words = append(words, word)
+	for _, word := range strings.Split(msg, " ") {
+		words = append(words, getWord(word, f))
 	}
 	return words
 }
@@ -121,7 +120,7 @@ func getWordsWrapped(msg string, f font) [][]string {
 
 func getLines(msg string, f font, width int) [][]string {
 	lines := make([][]string, 1) // make room for at least one line
-	words := getWordsWrapped(msg, f)
+	words := getWords(msg, f)
 
 	// kludge: add first line
 	lines[0] = make([]string, f.header.charheight)
