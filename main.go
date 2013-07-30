@@ -27,6 +27,14 @@ func printusage() {
 	fmt.Println("              [ -C controlfile ] [ -I infocode ] [ message ]")
 }
 
+func printLines(lines [][]string) {
+	for _, line := range lines {
+		for _, subline := range line {
+			fmt.Println(subline)
+		}
+	}
+}
+
 func main() {
 	fontsdir, err := findFonts()
 	if err != nil {
@@ -46,13 +54,6 @@ func main() {
 
 	msg := os.Args[1]
 
-	for _, c:= range msg {
-		fmt.Println(string(c))
-		l := getChar(c, f)
-
-		for _, line := range l {
-			fmt.Println(line)
-		}	
-	}
+	printLines(getLines(f, msg, 80))
 
 }

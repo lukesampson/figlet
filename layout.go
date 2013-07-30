@@ -96,34 +96,22 @@ func smushamt(char []string, line []string, smushmode int, rtol bool) int {
 	return 0
 }
 
-// returns true if the word could be added to the line
-func addWord(f font, word string, line []string) bool {
-	return false
-}
-
-// Gets the next line that will fit in allowed width
-func nextLine(f font, msg string, width int) ([]string, string) {
-	line := make([]string, f.header.charheight)
-	words := strings.Split(msg, " ")
-	for i, word := range words {
-		if addWord(f, word, line) {
-			msg = strings.Join(words[i+1:], " ")
-		} else if i == 0 { // word longer than line
-			panic("forced word break not implemented")
-		} else {
-			break
-		}
-	}
-	return line, msg
+func getWords(f font, msg string) [][]string {
+	strings.Split(msg, " ")
+	return nil
 }
 
 
 func getLines(f font, msg string, width int) [][]string {
 	lines := make([][]string, 0, 1) // make room for at least one line
-	for len(msg) > 0 {
-		var line []string
-		line, msg = nextLine(f, msg, width)
-		lines = append(lines, line)
+	words := getWords(f, msg)
+
+	// smoodge everything together for testing
+	for _, word := range words {
+		for j, wordline := range word {
+			lines[j] = append(lines[j], wordline)
+		}
 	}
+
 	return lines
 }
