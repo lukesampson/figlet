@@ -93,11 +93,25 @@ func Test_smush_heirarchy(t *testing.T) {
 	testSmushHierarchy('>', '(', '>', t)
 }
 
+func Test_smush_pairs(t *testing.T) {
+	testSmushPair('[', ']', '|', t)
+	testSmushPair(']', '[', '|', t)
+
+	testSmushPair('(', ')', '|', t)
+	testSmushPair(')', '(', '|', t)
+
+	testSmushPair('{', '}', '|', t)
+	testSmushPair('}', '{', '|', t)
+}
+
 func testSmushLowLine(l rune, r rune, expect rune, t *testing.T) {
 	testSmush(l, r, SMKern + SMSmush + SMLowLine, expect, t)
 }
 func testSmushHierarchy(l rune, r rune, expect rune, t *testing.T) {
 	testSmush(l, r, SMKern + SMSmush + SMHierarchy, expect, t)
+}
+func testSmushPair(l rune, r rune, expect rune, t *testing.T) {
+	testSmush(l, r, SMKern + SMSmush + SMPair, expect, t)
 }
 func testSmush(l rune, r rune, mode int, expect rune, t *testing.T) {
 	if x := smushem(l, r, mode, '$', false); x != expect {

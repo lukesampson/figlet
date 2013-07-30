@@ -22,7 +22,7 @@ const (
 func getChar(c rune, f font) []string {
 	 l, ok := f.chars[c]
 	 if !ok {
-	 	l = f.chars[0]
+		l = f.chars[0]
 	 }
 	 return l
 }
@@ -71,6 +71,15 @@ func smushem(lch rune, rch rune, mode int, hardblank rune, rtol bool) rune {
 			if inHrchy(lch, rch, i) { return rch }
 			if inHrchy(rch, lch, i) { return lch }
 		}
+	}
+
+	if mode & SMPair == SMPair {
+		if lch=='[' && rch==']' { return '|' }
+		if rch=='[' && lch==']' { return '|' }
+		if lch=='{' && rch=='}' { return '|' }
+		if rch=='{' && lch=='}' { return '|' }
+		if lch=='(' && rch==')' { return '|' }
+		if rch=='(' && lch==')' { return '|' }
 	}
 	return 0
 }
