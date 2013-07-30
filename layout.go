@@ -114,10 +114,10 @@ func getWord(w string, f font) []string {
 	return word
 }
 
-func getWords(msg string, f font) [][]string {
+func getWords(msg string, f font) []figWord {
 	words := make([]figWord, 0)
 	for _, word := range strings.Split(msg, " ") {
-		words = append(words, figWord { text = word, art = getWord(word, f) })
+		words = append(words, figWord { text: word, art: getWord(word, f) })
 	}
 	return words
 }
@@ -132,7 +132,7 @@ func getLines(msg string, f font, width int) [][]string {
 
 	// smoodge everything together for testing
 	for _, word := range words {
-		for j, wordline := range word {
+		for j, wordline := range word.art {
 			lines[0][j] += wordline
 		}
 	}
