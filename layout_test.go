@@ -104,6 +104,13 @@ func Test_smush_pairs(t *testing.T) {
 	testSmushPair('}', '{', '|', t)
 }
 
+func Test_smush_bigX(t *testing.T) {
+	mode := SMKern + SMSmush + SMBigX
+	testSmush('/', '\\', mode, '|', t)
+	testSmush('\\', '/', mode, 'Y', t)
+	testSmush('>', '<', mode, 'X', t)
+}
+
 func testSmushLowLine(l rune, r rune, expect rune, t *testing.T) {
 	testSmush(l, r, SMKern + SMSmush + SMLowLine, expect, t)
 }

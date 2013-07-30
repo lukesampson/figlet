@@ -81,6 +81,12 @@ func smushem(lch rune, rch rune, mode int, hardblank rune, rtol bool) rune {
 		if lch=='(' && rch==')' { return '|' }
 		if rch=='(' && lch==')' { return '|' }
 	}
+
+	if mode & SMBigX == SMBigX {
+		if lch == '/' && rch == '\\' { return '|' }
+		if lch == '\\' && rch == '/' { return 'Y' }
+		if lch == '>' && rch == '<' { return 'X' }
+	}
 	return 0
 }
 
