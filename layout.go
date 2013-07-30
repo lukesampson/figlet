@@ -17,16 +17,6 @@ const (
 	SMSmush = 128
 )
 
-// gets the font entry for the given character, or the 'missing'
-// character if the font doesn't contain this character
-func getChar(c rune, f font) []string {
-	 l, ok := f.chars[c]
-	 if !ok {
-		l = f.chars[0]
-	 }
-	 return l
-}
-
 func smushem(lch rune, rch rune, mode int, hardblank rune, rtol bool) rune {
 	if lch == ' ' { return rch }
 	if rch == ' ' { return lch }
@@ -96,20 +86,49 @@ func smushamt(char []string, line []string, smushmode int, rtol bool) int {
 	return 0
 }
 
-func getWords(f font, msg string) [][]string {
-	strings.Split(msg, " ")
-	return nil
+// gets the font entry for the given character, or the 'missing'
+// character if the font doesn't contain this character
+func getChar(c rune, f font) []string {
+	 l, ok := f.chars[c]
+	 if !ok {
+		l = f.chars[0]
+	 }
+	 return l
+}
+
+func getWord(w string, f font) []string {
+	word := make([]string, f.header.charheight)
+	for _, c := range w {
+		// todo: addchar func
+		char := getChar(c, f)
+		for i, charline := range char {
+			word[i] += charline
+		}
+	}
+
+	return word
+}
+
+func getWords(msg string, f font) [][]string {
+	words := make([][]string, 0)
+	for _, word := range strings.Split(msg, " ") {
+		words = append(words, getWord(word, f))
+	}
+	return words
 }
 
 
-func getLines(f font, msg string, width int) [][]string {
-	lines := make([][]string, 0, 1) // make room for at least one line
-	words := getWords(f, msg)
+func getLines(msg string, f font, width int) [][]string {
+	lines := make([][]string, 1) // make room for at least one line
+	words := getWords(msg, f)
+
+	// kludge: add first line
+	lines[0] = make([]string, f.header.charheight)
 
 	// smoodge everything together for testing
 	for _, word := range words {
 		for j, wordline := range word {
-			lines[j] = append(lines[j], wordline)
+			lines[0][j] += wordline
 		}
 	}
 

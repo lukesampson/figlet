@@ -54,6 +54,6 @@ func main() {
 
 	msg := os.Args[1]
 
-	printLines(getLines(f, msg, 80))
+	printLines(getLines(msg, f, 80))
 
 }
