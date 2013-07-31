@@ -148,14 +148,28 @@ func smushamt(char []string, line []string, smushmode int, hardblank rune, rtol 
 
 // Attempts to add the given character onto the end of the given line.
 // Returns true if this succeeded, false otherwise.
-func addChar(c rune, line *[]string, maxwidth int, f font, smushmode int, hardblank rune, rtol bool) bool {
+func addChar(c rune, linep *[]string, maxwidth int, f font, smushmode int, hardblank rune, rtol bool) bool {
+	line := *linep
 	char := getChar(c, f)
-	smushamount := smushamt(char, *line, smushmode, hardblank, rtol)
+	smushamount := smushamt(char, line, smushmode, hardblank, rtol)
 
-	linelen := len((*line)[0])
-	charwidth := len(char[0])
+	linelen := len(line[0])
+	charheight, charwidth := len(char), len(char[0])
 
 	if linelen + charwidth - smushamount > maxwidth { return false }
+
+	for row := 0; row < charheight; row++ {
+		if rtol { panic ("right-to-left not implemented") }
+		for k := 0; k < smushamount; k++ {
+			column := linelen - smushamount + k
+			if column < 0 { column = 0 }
+
+			lch, rch := rune(line[row][column]), rune(char[row][k])
+			smushed := smushem(lch, rch, smushmode, hardblank, rtol)
+			line[row] = line[row][:column] + string(smushed)
+		}
+		line[row] += char[row][smushamount:]
+	}
 
 	return true
 }
