@@ -82,8 +82,46 @@ func smushem(lch rune, rch rune, mode int, hardblank rune, rtol bool) rune {
 
 // smushamt returns the maximum amount that the character can be smushed
 // into the line.
-func smushamt(char []string, line []string, smushmode int, rtol bool) int {
-	return 0
+func smushamt(char []string, line []string, smushmode int, hardblank rune, rtol bool) int {
+	if (smushmode & (SMSmush | SMKern)) == 0 {
+		return 0;
+  	}
+
+  	charwidth := len(char[0])
+  	charheight := len(char)
+
+  	empty := func (ch rune) bool {
+		return ch == 0 || ch == ' '
+	}
+
+	maxsmush := charwidth
+	for row := 0; row < charheight; row++ {
+		var left, right []rune
+		if rtol {
+			left, right = []rune(char[row]), []rune(line[row])
+		} else {
+			left, right = []rune(line[row]), []rune(char[row])
+		}
+
+		// find first non-empty index in left and right
+		var i, j int
+		for i = len(left) - 1; i >= 0 && empty(left[i]); i-- { }
+		for j = 0; j < len(right) && empty(right[j]); j++ { }
+
+		// the amount of smushing possible just by removing empty spaces
+		rowsmush := j + len(left) - i + 1
+
+		// see if we can smush it further
+		lch := left[i]
+		rch := right[j]
+		if !empty(lch) && !empty(rch) {
+			if smushem(lch, rch, smushmode, hardblank, rtol) != 0 { rowsmush++ }
+		}
+
+		if rowsmush < maxsmush { maxsmush = rowsmush }
+	}
+
+	return maxsmush;
 }
 
 // gets the font entry for the given character, or the 'missing'
