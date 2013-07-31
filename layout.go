@@ -17,6 +17,28 @@ const (
 	SMSmush = 128
 )
 
+// gets the font entry for the given character, or the 'missing'
+// character if the font doesn't contain this character
+func getChar(c rune, f font) []string {
+	 l, ok := f.chars[c]
+	 if !ok {
+		l = f.chars[0]
+	 }
+	 return l
+}
+
+// Given 2 characters, attempts to smush them into 1, according to
+// smushmode.  Returns smushed character or '\0' if no smushing can be
+// done.
+
+// smushmode values are sum of following (all values smush blanks):
+// 1: Smush equal chars (not hardblanks)
+// 2: Smush '_' with any char in hierarchy below
+// 4: hierarchy: "|", "/\", "[]", "{}", "()", "<>"
+//    Each class in hier. can be replaced by later class.
+// 8: [ + ] -> |, { + } -> |, ( + ) -> |
+// 16: / + \ -> X, > + < -> X (only in that order)
+// 32: hardblank + hardblank -> hardblank
 func smushem(lch rune, rch rune, mode int, hardblank rune, rtol bool) rune {
 	if lch == ' ' { return rch }
 	if rch == ' ' { return lch }
@@ -124,16 +146,21 @@ func smushamt(char []string, line []string, smushmode int, hardblank rune, rtol 
 	return maxsmush;
 }
 
-// gets the font entry for the given character, or the 'missing'
-// character if the font doesn't contain this character
-func getChar(c rune, f font) []string {
-	 l, ok := f.chars[c]
-	 if !ok {
-		l = f.chars[0]
-	 }
-	 return l
+// Attempts to add the given character onto the end of the given line.
+// Returns true if this succeeded, false otherwise.
+func addChar(c rune, line *[]string, maxwidth int, f font, smushmode int, hardblank rune, rtol bool) bool {
+	char := getChar(c, f)
+	smushamount := smushamt(char, *line, smushmode, hardblank, rtol)
+
+	linelen := len((*line)[0])
+	charwidth := len(char[0])
+
+	if linelen + charwidth - smushamount > maxwidth { return false }
+
+	return true
 }
 
+// delete this!
 type figWord struct {
 	art []string
 	text string
