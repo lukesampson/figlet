@@ -2,7 +2,7 @@ package main
 
 import (
 	"strings"
-	"fmt"
+	//"fmt"
 )
 
 // smush modes
@@ -142,7 +142,7 @@ func smushamt(char [][]rune, line [][]rune, s settings) int {
 			}
 		}
 
-		fmt.Printf("i: %v, j: %v, rowsmush: %v\n", i, j, rowsmush)
+		//fmt.Printf("i: %v, j: %v, rowsmush: %v\n", i, j, rowsmush)
 
 		if rowsmush < maxsmush { maxsmush = rowsmush }
 	}
@@ -192,7 +192,7 @@ func addChar(charp *[][]rune, linep *[][]rune, s settings) bool {
 		line[row] = append(line[row], char[row][smushamount:]...)
 	}
 
-	fmt.Println(figText { art: line })
+	//fmt.Println(figText { art: line })
 
 	return true
 }
