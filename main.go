@@ -46,8 +46,13 @@ func main() {
 	}
 
 	msg := strings.Join(os.Args[1:], " ")
-	smushmode := SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair
 
-	printLines(getLines(msg, f, 80, smushmode, '$', false))
+	s := settings {
+		smushmode: SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair,
+		maxwidth: 80,
+		hardblank: '$',
+		rtol: false	}
+
+	printLines(getLines(msg, f, s))
 
 }

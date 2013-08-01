@@ -39,42 +39,42 @@ func getChar(c rune, f font) [][]rune {
 // 8: [ + ] -> |, { + } -> |, ( + ) -> |
 // 16: / + \ -> X, > + < -> X (only in that order)
 // 32: hardblank + hardblank -> hardblank
-func smushem(lch rune, rch rune, mode int, hardblank rune, rtol bool) rune {
+func smushem(lch rune, rch rune, s settings) rune {
 	if lch == ' ' { return rch }
 	if rch == ' ' { return lch }
 
-	if mode & SMSmush == 0 { // smush not enabled
+	if s.smushmode & SMSmush == 0 { // smush not enabled
 		return 0
 	}
 
-	if mode & SMKern == 0 { // smush but not kern
+	if s.smushmode & SMKern == 0 { // smush but not kern
 		// This is smushing by universal overlapping
 
 		// ensure overlapping preference to visible chars (spaces handled already)
-		if lch == hardblank { return rch }
-		if rch == hardblank { return lch }
+		if lch == s.hardblank { return rch }
+		if rch == s.hardblank { return lch }
 
 		// ensure dominant char overlaps, depending on right-to-left parameter
-		if rtol { return lch }
+		if s.rtol { return lch }
 		return rch
 	}
 
-	if mode & SMHardBlank == SMHardBlank {
-		if lch == hardblank && rch == hardblank { return hardblank }
+	if s.smushmode & SMHardBlank == SMHardBlank {
+		if lch == s.hardblank && rch == s.hardblank { return s.hardblank }
 	}
 
-	if lch == hardblank || rch == hardblank { return 0 }
+	if lch == s.hardblank || rch == s.hardblank { return 0 }
 
-	if mode & SMEqual == SMEqual {
+	if s.smushmode & SMEqual == SMEqual {
 		if lch == rch { return lch }
 	}
 
-	if mode & SMLowLine == SMLowLine {
+	if s.smushmode & SMLowLine == SMLowLine {
 		if lch == '_' && strings.ContainsRune("|/\\[]{}()<>", rch) { return rch }
 		if rch == '_' && strings.ContainsRune("|/\\[]{}()<>", lch) { return lch }
 	}
 
-	if mode & SMHierarchy == SMHierarchy {
+	if s.smushmode & SMHierarchy == SMHierarchy {
 		hrchy := []string { "|", "/\\", "[]", "{}", "()", "<>" } // low -> high precedence
 		inHrchy := func(low rune, high rune, i int) bool {
 			return strings.ContainsRune(hrchy[i], low) && strings.ContainsRune(strings.Join(hrchy[i+1:], ""), high)
@@ -85,7 +85,7 @@ func smushem(lch rune, rch rune, mode int, hardblank rune, rtol bool) rune {
 		}
 	}
 
-	if mode & SMPair == SMPair {
+	if s.smushmode & SMPair == SMPair {
 		if lch=='[' && rch==']' { return '|' }
 		if rch=='[' && lch==']' { return '|' }
 		if lch=='{' && rch=='}' { return '|' }
@@ -94,7 +94,7 @@ func smushem(lch rune, rch rune, mode int, hardblank rune, rtol bool) rune {
 		if rch=='(' && lch==')' { return '|' }
 	}
 
-	if mode & SMBigX == SMBigX {
+	if s.smushmode & SMBigX == SMBigX {
 		if lch == '/' && rch == '\\' { return '|' }
 		if lch == '\\' && rch == '/' { return 'Y' }
 		if lch == '>' && rch == '<' { return 'X' }
@@ -104,8 +104,8 @@ func smushem(lch rune, rch rune, mode int, hardblank rune, rtol bool) rune {
 
 // smushamt returns the maximum amount that the character can be smushed
 // into the line.
-func smushamt(char [][]rune, line [][]rune, smushmode int, hardblank rune, rtol bool) int {
-	if (smushmode & (SMSmush | SMKern)) == 0 {
+func smushamt(char [][]rune, line [][]rune, s settings) int {
+	if s.smushmode & (SMSmush | SMKern) == 0 {
 		return 0;
   	}
 
@@ -119,7 +119,7 @@ func smushamt(char [][]rune, line [][]rune, smushmode int, hardblank rune, rtol 
 	maxsmush := charwidth
 	for row := 0; row < charheight; row++ {
 		var left, right []rune
-		if rtol {
+		if s.rtol {
 			left, right = []rune(char[row]), []rune(line[row])
 		} else {
 			left, right = []rune(line[row]), []rune(char[row])
@@ -139,7 +139,7 @@ func smushamt(char [][]rune, line [][]rune, smushmode int, hardblank rune, rtol 
 			lch := left[len(left) - 1 - i]
 			rch := right[j]
 			if !empty(lch) && !empty(rch) {
-				if smushem(lch, rch, smushmode, hardblank, rtol) != 0 { rowsmush++ }
+				if smushem(lch, rch, s) != 0 { rowsmush++ }
 			}
 		}
 
@@ -149,25 +149,26 @@ func smushamt(char [][]rune, line [][]rune, smushmode int, hardblank rune, rtol 
 	return maxsmush;
 }
 
+type settings struct {
+	maxwidth int
+	smushmode int
+	hardblank rune
+	rtol bool
+}
+
 // Attempts to add the given character onto the end of the given line.
 // Returns true if this succeeded, false otherwise.
-func addChar(c rune, linep *[][]rune, maxwidth int, f font, smushmode int, hardblank rune, rtol bool) bool {
-	line := *linep
-	char := getChar(c, f)
-	smushamount := smushamt(char, line, smushmode, hardblank, rtol)
-
-	//fmt.Printf("%c\n", c)
-	fmt.Println(figText { art: char })
-	//fmt.Println(figText { art: line })
-	fmt.Println(smushamount)
+func addChar(charp *[][]rune, linep *[][]rune, s settings) bool {
+	char, line := *charp, *linep
+	smushamount := smushamt(char, line, s)
 
 	linelen := len(line[0])
 	charheight, charwidth := len(char), len(char[0])
 
-	if linelen + charwidth - smushamount > maxwidth { return false }
+	if linelen + charwidth - smushamount > s.maxwidth { return false }
 
 	for row := 0; row < charheight; row++ {
-		if rtol { panic ("right-to-left not implemented") }
+		if s.rtol { panic ("right-to-left not implemented") }
 		for k := 0; k < smushamount; k++ {
 			column := linelen - smushamount + k
 
@@ -177,7 +178,7 @@ func addChar(c rune, linep *[][]rune, maxwidth int, f font, smushmode int, hardb
 				smushed = rch
 			} else {
 				lch := rune(line[row][column])	
-				smushed = smushem(lch, rch, smushmode, hardblank, rtol)
+				smushed = smushem(lch, rch, s)
 			}
 			
 			line[row] = append(line[row][:column + 1], smushed)
@@ -210,26 +211,27 @@ func (ft figText) String() string {
 	return str
 }
 
-func getWord(w string, f font, smushmode int, hardblank rune, rtol bool) [][]rune {
+func getWord(w string, f font, s settings) [][]rune {
 	word := make([][]rune, f.header.charheight)
 	for _, c := range w {
-		addChar(c, &word, 500, f, smushmode, hardblank, rtol)
+		c := getChar(c, f)
+		addChar(&c, &word, s)
 	}
 
 	return word
 }
 
-func getWords(msg string, f font, smushmode int, hardblank rune, rtol bool) []figText {
+func getWords(msg string, f font, s settings) []figText {
 	words := make([]figText, 0)
 	for _, word := range strings.Split(msg, " ") {
-		words = append(words, figText {	text: word,	art: getWord(word, f, smushmode, hardblank, rtol) })
+		words = append(words, figText {	text: word,	art: getWord(word, f, s) })
 	}
 	return words
 }
 
-func getLines(msg string, f font, maxwidth int, smushmode int, hardblank rune, rtol bool) []figText {
+func getLines(msg string, f font, s settings) []figText {
 	lines := make([]figText, 1) // make room for at least one line
-	words := getWords(msg, f, smushmode, hardblank, rtol)
+	words := getWords(msg, f, s)
 
 	// kludge: add first line
 	lines[0] = figText { }
