@@ -203,10 +203,7 @@ func (ft figText) width() int {
 func (ft figText) String() string {
 	str := ""
 	for _, line := range ft.art {
-		for _, char := range line {
-			str += fmt.Sprintf("%c", char)
-		}
-		str += "\n"
+		str += string(line) + "\n"
 	}
 	return str
 }

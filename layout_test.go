@@ -2,7 +2,6 @@ package main
 
 import (
 	"testing"
-	"fmt"
 )
 
 func Test_smush_with_lch_empty_always_returns_rch(t *testing.T) {
@@ -118,11 +117,15 @@ func Test_smush_bigX(t *testing.T) {
 }
 
 func Test_addChar(t *testing.T) {
-	line := make([][]rune, 1)
-	char := make([][]rune, 1)
+	testAddCharLine("|_ ", "  _", "|_", t)
+}
 
-	line[0] = []rune { '|','_',' ' }
-	char[0] = []rune { ' ',' ',' ','_'}
+func testAddCharLine(line string, char string, expect string, t *testing.T) {
+	line_slice := make([][]rune, 1)
+	char_slice := make([][]rune, 1)
+
+	line_slice[0] = []rune(line)
+	char_slice[0] = []rune(char)
 
 	s := settings {
 		smushmode: SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair,
@@ -131,44 +134,13 @@ func Test_addChar(t *testing.T) {
 		maxwidth: 80,
 	}
 
-	addChar(&char, &line, s)
-
-	/*
-	
-
-	smushamount := 3
-
-	//fmt.Printf("%c\n", c)
-	fmt.Println(figText { art: line })
-	fmt.Println(figText { art: char })
-	fmt.Println(smushamount)
-
-	linelen := len(line[0])
-	charheight, charwidth := len(char), len(char[0])
-
-	if linelen + charwidth - smushamount > maxwidth { return }
-
-	for row := 0; row < charheight; row++ {
-		if rtol { panic ("right-to-left not implemented") }
-		for k := 0; k < smushamount; k++ {
-			column := linelen - smushamount + k
-
-			rch := rune(char[row][k])
-			var smushed rune
-			if column < 0 {
-				smushed = rch
-			} else {
-				lch := rune(line[row][column])	
-				smushed = smushem(lch, rch, smushmode, hardblank, rtol)
-			}
-			
-			line[row] = append(line[row][:column + 1], smushed)
-		}
-		line[row] = append(line[row], char[row][smushamount:]...)
+	if !addChar(&char_slice, &line_slice, s) {
+		t.Errorf("addChar returned false")
 	}
-	*/
 
-	fmt.Println(figText { art: line })
+	if string(line_slice[0]) != expect {
+		t.Errorf("addChar made %v, expected %v", string(line_slice[0]), expect)
+	}
 }
 
 func testSettings(smushmode int) settings {
