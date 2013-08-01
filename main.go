@@ -28,10 +28,13 @@ func printusage() {
 	fmt.Println("              [ -C controlfile ] [ -I infocode ] [ message ]")
 }
 
-func printLines(lines [][]string) {
+func printLines(lines [][][]rune) {
 	for _, line := range lines {
 		for _, subline := range line {
-			fmt.Println(subline)
+			for _, outchar := range subline {
+				fmt.Printf("%c", outchar)
+			}
+			fmt.Println()
 		}
 	}
 }

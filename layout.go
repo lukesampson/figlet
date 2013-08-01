@@ -19,7 +19,7 @@ const (
 
 // gets the font entry for the given character, or the 'missing'
 // character if the font doesn't contain this character
-func getChar(c rune, f font) []string {
+func getChar(c rune, f font) [][]rune {
 	 l, ok := f.chars[c]
 	 if !ok {
 		l = f.chars[0]
@@ -104,7 +104,7 @@ func smushem(lch rune, rch rune, mode int, hardblank rune, rtol bool) rune {
 
 // smushamt returns the maximum amount that the character can be smushed
 // into the line.
-func smushamt(char []string, line []string, smushmode int, hardblank rune, rtol bool) int {
+func smushamt(char [][]rune, line [][]rune, smushmode int, hardblank rune, rtol bool) int {
 	if (smushmode & (SMSmush | SMKern)) == 0 {
 		return 0;
   	}
@@ -148,7 +148,7 @@ func smushamt(char []string, line []string, smushmode int, hardblank rune, rtol 
 
 // Attempts to add the given character onto the end of the given line.
 // Returns true if this succeeded, false otherwise.
-func addChar(c rune, linep *[]string, maxwidth int, f font, smushmode int, hardblank rune, rtol bool) bool {
+func addChar(c rune, linep *[][]rune, maxwidth int, f font, smushmode int, hardblank rune, rtol bool) bool {
 	line := *linep
 	char := getChar(c, f)
 	smushamount := smushamt(char, line, smushmode, hardblank, rtol)
@@ -166,27 +166,30 @@ func addChar(c rune, linep *[]string, maxwidth int, f font, smushmode int, hardb
 
 			lch, rch := rune(line[row][column]), rune(char[row][k])
 			smushed := smushem(lch, rch, smushmode, hardblank, rtol)
-			line[row] = line[row][:column] + string(smushed)
+			line[row] = append(line[row][:column], smushed)
 		}
-		line[row] += char[row][smushamount:]
+		line[row] = append(line[row], char[row][smushamount:]...)
 	}
 
 	return true
 }
 
-// delete this!
 type figWord struct {
-	art []string
+	art [][]rune
 	text string
 }
 
-func getWord(w string, f font) []string {
-	word := make([]string, f.header.charheight)
+func (f *figWord) width() int {
+	return len(f.art[0])
+}
+
+func getWord(w string, f font) [][]rune {
+	word := make([][]rune, f.header.charheight)
 	for _, c := range w {
 		// todo: addchar func
 		char := getChar(c, f)
 		for i, charline := range char {
-			word[i] += charline
+			word[i] = append(word[i], charline...)
 		}
 	}
 
@@ -201,18 +204,17 @@ func getWords(msg string, f font) []figWord {
 	return words
 }
 
-
-func getLines(msg string, f font, width int) [][]string {
-	lines := make([][]string, 1) // make room for at least one line
+func getLines(msg string, f font, width int) [][][]rune {
+	lines := make([][][]rune, 1) // make room for at least one line
 	words := getWords(msg, f)
 
 	// kludge: add first line
-	lines[0] = make([]string, f.header.charheight)
+	lines[0] = make([][]rune, f.header.charheight)
 
 	// smoodge everything together for testing
 	for _, word := range words {
 		for j, wordline := range word.art {
-			lines[0][j] += wordline
+			lines[0][j] = append(lines[0][j], wordline...)
 		}
 	}
 

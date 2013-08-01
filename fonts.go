@@ -103,8 +103,8 @@ func readHeader(header string) (fontHeader, error) {
 	return h, nil
 }
 
-func readFontChar(lines []string, currline int, height int) []string {
-	char := make([]string, height)
+func readFontChar(lines []string, currline int, height int) [][]rune {
+	char := make([][]rune, height)
 	for row := 0; row < height; row++ {
 		line := lines[currline+row]
 		
@@ -120,7 +120,7 @@ func readFontChar(lines []string, currline int, height int) []string {
 			for k > 0 && line[k] == endchar { k-- }
 		}
 
-		char[row] = line[:k+1]
+		char[row] = []rune(line[:k+1])
 	}
 
 	return char
@@ -129,7 +129,7 @@ func readFontChar(lines []string, currline int, height int) []string {
 type font struct {
 	header fontHeader
 	comment string
-	chars map[rune] []string
+	chars map[rune] [][]rune
 }
 
 func readFont(file string) (font, error) {
@@ -145,15 +145,12 @@ func readFont(file string) (font, error) {
 
 	f.comment = strings.Join(lines[1:f.header.commentLines+1], "\n")
 
-	f.chars = make(map[rune] []string)
+	f.chars = make(map[rune] [][]rune)
 	charheight := int(f.header.charheight)
 	currline := int(f.header.commentLines)+1
 	
 	// allocate 0, the 'missing' character
-	f.chars[0] = make([]string, charheight)
-	for i := 0; i < charheight; i++ {
-		f.chars[0][i] = ""
-	}
+	f.chars[0] = make([][]rune, charheight)
 
 	// standard ASCII characters
 	for ord := ' '; ord <= '~'; ord++ {
