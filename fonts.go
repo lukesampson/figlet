@@ -178,3 +178,23 @@ func readFont(file string) (font, error) {
 	
 	return f, nil
 }
+
+func getFont(name string) (font, error) {
+	fontsdir, err := findFonts()
+	if err != nil {
+		return font { }, err
+	}
+
+	fontname := defaultFont
+	fontpath, err := findFont(fontsdir, fontname)
+	if err != nil {
+		return font { }, err
+	}
+	
+	f, err := readFont(fontpath)
+	if err != nil {
+		return font { }, err
+	}
+
+	return f, nil
+}

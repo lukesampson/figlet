@@ -40,24 +40,14 @@ func printLines(lines []figText) {
 }
 
 func main() {
-	fontsdir, err := findFonts()
-	if err != nil {
-		fmt.Println(err); os.Exit(1)
-	}
-
-	fontname := defaultFont
-	fontpath, err := findFont(fontsdir, fontname)
-	if err != nil {
-		fmt.Println(err); os.Exit(1)
-	}
-	
-	f, err := readFont(fontpath)
+	f, err := getFont(defaultFont)
 	if err != nil {
 		fmt.Println(err); os.Exit(1)
 	}
 
 	msg := strings.Join(os.Args[1:], " ")
+	smushmode := SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair
 
-	printLines(getLines(msg, f, 80))
+	printLines(getLines(msg, f, 80, smushmode, '$', false))
 
 }

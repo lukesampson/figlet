@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"testing"
+	"fmt"
+)
 
 func Test_smush_with_lch_empty_always_returns_rch(t *testing.T) {
 	rchs := []rune { 'a', '!', '$' }
@@ -109,6 +112,50 @@ func Test_smush_bigX(t *testing.T) {
 	testSmush('/', '\\', mode, '|', t)
 	testSmush('\\', '/', mode, 'Y', t)
 	testSmush('>', '<', mode, 'X', t)
+}
+
+func Test_addChar(t *testing.T) {
+	line := make([][]rune, 1)
+	char := make([][]rune, 1)
+
+	line[0] = []rune { '|','_',' '}
+	char[0] = []rune { ' ',' ',' ','_'}
+
+	smushmode := SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair
+	hardblank, rtol, maxwidth := '$', false, 80
+
+	smushamount := 3
+
+	//fmt.Printf("%c\n", c)
+	fmt.Println(figText { art: line })
+	fmt.Println(figText { art: char })
+	fmt.Println(smushamount)
+
+	linelen := len(line[0])
+	charheight, charwidth := len(char), len(char[0])
+
+	if linelen + charwidth - smushamount > maxwidth { return }
+
+	for row := 0; row < charheight; row++ {
+		if rtol { panic ("right-to-left not implemented") }
+		for k := 0; k < smushamount; k++ {
+			column := linelen - smushamount + k
+
+			rch := rune(char[row][k])
+			var smushed rune
+			if column < 0 {
+				smushed = rch
+			} else {
+				lch := rune(line[row][column])	
+				smushed = smushem(lch, rch, smushmode, hardblank, rtol)
+			}
+			
+			line[row] = append(line[row][:column + 1], smushed)
+		}
+		line[row] = append(line[row], char[row][smushamount:]...)
+	}
+
+	fmt.Println(figText { art: line })
 }
 
 func testSmushLowLine(l rune, r rune, expect rune, t *testing.T) {

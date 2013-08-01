@@ -2,7 +2,7 @@ package main
 
 import (
 	"strings"
-	//"fmt"
+	"fmt"
 )
 
 // smush modes
@@ -125,19 +125,22 @@ func smushamt(char [][]rune, line [][]rune, smushmode int, hardblank rune, rtol 
 			left, right = []rune(line[row]), []rune(char[row])
 		}
 
-		// find first non-empty index in left and right
+		// find number of empty chars for left and right
 		var i, j int
-		for i = len(left) - 1; i >= 0 && empty(left[i]); i-- { }
+		for i = 0; i < len(left) && empty(left[len(left) - 1 - i]); i++ { }
 		for j = 0; j < len(right) && empty(right[j]); j++ { }
 
 		// the amount of smushing possible just by removing empty spaces
-		rowsmush := j + len(left) - i + 1
+		rowsmush := j + i
+		//fmt.Printf("i: %v, j: %v, rowsmush: %v\n", i, j, rowsmush)
 
-		// see if we can smush it further
-		lch := left[i]
-		rch := right[j]
-		if !empty(lch) && !empty(rch) {
-			if smushem(lch, rch, smushmode, hardblank, rtol) != 0 { rowsmush++ }
+		if i < len(left) && j < len(right) {
+			// see if we can smush it even further
+			lch := left[len(left) - 1 - i]
+			rch := right[j]
+			if !empty(lch) && !empty(rch) {
+				if smushem(lch, rch, smushmode, hardblank, rtol) != 0 { rowsmush++ }
+			}
 		}
 
 		if rowsmush < maxsmush { maxsmush = rowsmush }
@@ -153,6 +156,11 @@ func addChar(c rune, linep *[][]rune, maxwidth int, f font, smushmode int, hardb
 	char := getChar(c, f)
 	smushamount := smushamt(char, line, smushmode, hardblank, rtol)
 
+	//fmt.Printf("%c\n", c)
+	fmt.Println(figText { art: char })
+	//fmt.Println(figText { art: line })
+	fmt.Println(smushamount)
+
 	linelen := len(line[0])
 	charheight, charwidth := len(char), len(char[0])
 
@@ -162,14 +170,22 @@ func addChar(c rune, linep *[][]rune, maxwidth int, f font, smushmode int, hardb
 		if rtol { panic ("right-to-left not implemented") }
 		for k := 0; k < smushamount; k++ {
 			column := linelen - smushamount + k
-			if column < 0 { column = 0 }
 
-			lch, rch := rune(line[row][column]), rune(char[row][k])
-			smushed := smushem(lch, rch, smushmode, hardblank, rtol)
-			line[row] = append(line[row][:column], smushed)
+			rch := rune(char[row][k])
+			var smushed rune
+			if column < 0 {
+				smushed = rch
+			} else {
+				lch := rune(line[row][column])	
+				smushed = smushem(lch, rch, smushmode, hardblank, rtol)
+			}
+			
+			line[row] = append(line[row][:column + 1], smushed)
 		}
 		line[row] = append(line[row], char[row][smushamount:]...)
 	}
+
+	fmt.Println(figText { art: line })
 
 	return true
 }
@@ -179,34 +195,41 @@ type figText struct {
 	text string
 }
 
-func (f *figText) width() int {
-	return len(f.art[0])
+func (ft figText) width() int {
+	return len(ft.art[0])
 }
 
-func getWord(w string, f font) [][]rune {
+func (ft figText) String() string {
+	str := ""
+	for _, line := range ft.art {
+		for _, char := range line {
+			str += fmt.Sprintf("%c", char)
+		}
+		str += "\n"
+	}
+	return str
+}
+
+func getWord(w string, f font, smushmode int, hardblank rune, rtol bool) [][]rune {
 	word := make([][]rune, f.header.charheight)
 	for _, c := range w {
-		// todo: addchar func
-		char := getChar(c, f)
-		for i, charline := range char {
-			word[i] = append(word[i], charline...)
-		}
+		addChar(c, &word, 500, f, smushmode, hardblank, rtol)
 	}
 
 	return word
 }
 
-func getWords(msg string, f font) []figText {
+func getWords(msg string, f font, smushmode int, hardblank rune, rtol bool) []figText {
 	words := make([]figText, 0)
 	for _, word := range strings.Split(msg, " ") {
-		words = append(words, figText { text: word, art: getWord(word, f) })
+		words = append(words, figText {	text: word,	art: getWord(word, f, smushmode, hardblank, rtol) })
 	}
 	return words
 }
 
-func getLines(msg string, f font, width int) []figText {
+func getLines(msg string, f font, maxwidth int, smushmode int, hardblank rune, rtol bool) []figText {
 	lines := make([]figText, 1) // make room for at least one line
-	words := getWords(msg, f)
+	words := getWords(msg, f, smushmode, hardblank, rtol)
 
 	// kludge: add first line
 	lines[0] = figText { }
