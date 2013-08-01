@@ -28,9 +28,9 @@ func printusage() {
 	fmt.Println("              [ -C controlfile ] [ -I infocode ] [ message ]")
 }
 
-func printLines(lines [][][]rune) {
+func printLines(lines []figText) {
 	for _, line := range lines {
-		for _, subline := range line {
+		for _, subline := range line.art {
 			for _, outchar := range subline {
 				fmt.Printf("%c", outchar)
 			}

@@ -174,12 +174,12 @@ func addChar(c rune, linep *[][]rune, maxwidth int, f font, smushmode int, hardb
 	return true
 }
 
-type figWord struct {
+type figText struct {
 	art [][]rune
 	text string
 }
 
-func (f *figWord) width() int {
+func (f *figText) width() int {
 	return len(f.art[0])
 }
 
@@ -196,25 +196,26 @@ func getWord(w string, f font) [][]rune {
 	return word
 }
 
-func getWords(msg string, f font) []figWord {
-	words := make([]figWord, 0)
+func getWords(msg string, f font) []figText {
+	words := make([]figText, 0)
 	for _, word := range strings.Split(msg, " ") {
-		words = append(words, figWord { text: word, art: getWord(word, f) })
+		words = append(words, figText { text: word, art: getWord(word, f) })
 	}
 	return words
 }
 
-func getLines(msg string, f font, width int) [][][]rune {
-	lines := make([][][]rune, 1) // make room for at least one line
+func getLines(msg string, f font, width int) []figText {
+	lines := make([]figText, 1) // make room for at least one line
 	words := getWords(msg, f)
 
 	// kludge: add first line
-	lines[0] = make([][]rune, f.header.charheight)
+	lines[0] = figText { }
+	lines[0].art = make([][]rune, f.header.charheight)
 
 	// smoodge everything together for testing
 	for _, word := range words {
 		for j, wordline := range word.art {
-			lines[0][j] = append(lines[0][j], wordline...)
+			lines[0].art[j] = append(lines[0].art[j], wordline...)
 		}
 	}
 
