@@ -116,8 +116,27 @@ func Test_smush_bigX(t *testing.T) {
 	testSmush('>', '<', mode, 'X', t)
 }
 
+func test_smushamt(t *testing.T) {
+	testSmushamtLine("|_ ", "  _", 3, t)
+}
+
 func Test_addChar(t *testing.T) {
-	testAddCharLine("|_ ", "  _", "|_", t)
+	testAddCharLine("|_ ", "  _", "|__", t)
+	testAddCharLine("|_ ", "   _", "|__", t)
+}
+
+func testSmushamtLine(line string, char string, want int, t *testing.T) {
+	line_slice := make([][]rune, 1)
+	char_slice := make([][]rune, 1)
+
+	line_slice[0] = []rune(line)
+	char_slice[0] = []rune(char)
+
+	s := testSettings(SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair)
+
+	if smushamt(char_slice, line_slice, s) != want {
+		t.Errorf("smushamt = %v, want %v", want)
+	}
 }
 
 func testAddCharLine(line string, char string, expect string, t *testing.T) {
@@ -127,12 +146,7 @@ func testAddCharLine(line string, char string, expect string, t *testing.T) {
 	line_slice[0] = []rune(line)
 	char_slice[0] = []rune(char)
 
-	s := settings {
-		smushmode: SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair,
-		hardblank: '$',
-		rtol: false,
-		maxwidth: 80,
-	}
+	s := testSettings(SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair)
 
 	if !addChar(&char_slice, &line_slice, s) {
 		t.Errorf("addChar returned false")
@@ -148,6 +162,7 @@ func testSettings(smushmode int) settings {
 		smushmode: smushmode,
 		hardblank: '$',
 		rtol: false,
+		maxwidth: 80,
 	}
 }
 

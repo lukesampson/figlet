@@ -116,7 +116,7 @@ func smushamt(char [][]rune, line [][]rune, s settings) int {
 		return ch == 0 || ch == ' '
 	}
 
-	maxsmush := charwidth
+	maxsmush := charwidth// + 1
 	for row := 0; row < charheight; row++ {
 		var left, right []rune
 		if s.rtol {
@@ -132,7 +132,6 @@ func smushamt(char [][]rune, line [][]rune, s settings) int {
 
 		// the amount of smushing possible just by removing empty spaces
 		rowsmush := j + i
-		//fmt.Printf("i: %v, j: %v, rowsmush: %v\n", i, j, rowsmush)
 
 		if i < len(left) && j < len(right) {
 			// see if we can smush it even further
@@ -142,6 +141,8 @@ func smushamt(char [][]rune, line [][]rune, s settings) int {
 				if smushem(lch, rch, s) != 0 { rowsmush++ }
 			}
 		}
+
+		fmt.Printf("i: %v, j: %v, rowsmush: %v\n", i, j, rowsmush)
 
 		if rowsmush < maxsmush { maxsmush = rowsmush }
 	}
@@ -167,21 +168,26 @@ func addChar(charp *[][]rune, linep *[][]rune, s settings) bool {
 
 	if linelen + charwidth - smushamount > s.maxwidth { return false }
 
+	//fmt.Printf("smushamount: %v\n", smushamount)
+
 	for row := 0; row < charheight; row++ {
 		if s.rtol { panic ("right-to-left not implemented") }
 		for k := 0; k < smushamount; k++ {
-			column := linelen - smushamount + k
+			column := linelen - 1
 
 			rch := rune(char[row][k])
 			var smushed rune
 			if column < 0 {
+				column = 0
 				smushed = rch
 			} else {
 				lch := rune(line[row][column])	
 				smushed = smushem(lch, rch, s)
+
+				//fmt.Printf("k: %v, col: %v, lch: %q, rch: %q, smushed: %q\n", k, column, lch, rch, smushed)
 			}
 			
-			line[row] = append(line[row][:column + 1], smushed)
+			line[row] = append(line[row][:column], smushed)
 		}
 		line[row] = append(line[row], char[row][smushamount:]...)
 	}
