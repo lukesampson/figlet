@@ -116,7 +116,7 @@ func Test_smush_bigX(t *testing.T) {
 	testSmush('>', '<', mode, 'X', t)
 }
 
-func test_smushamt(t *testing.T) {
+func Test_smushamt(t *testing.T) {
 	testSmushamtLine("|_ ", "  _", 3, t)
 }
 
