@@ -170,31 +170,6 @@ func addChar(char *figText, line *figText, s settings) {
 	}
 }
 
-type figText struct {
-	art [][]rune
-	text string
-}
-
-func (ft *figText) width() int {
-	return len(ft.art[0])
-}
-
-func (ft *figText) height() int {
-	return len(ft.art)
-}
-
-func (ft figText) String() string {
-	str := ""
-	for _, line := range ft.art {
-		str += string(line) + "\n"
-	}
-	return str
-}
-
-func newFigText(height int) *figText {
-	return &figText { art: make([][]rune, height) }
-}
-
 // gets the font entry for the given character, or the 'missing'
 // character if the font doesn't contain this character
 func getChar(c rune, f font) *figText {
@@ -237,7 +212,9 @@ func getLines(msg string, f font, maxwidth int, s settings) []figText {
 			lines = append(lines, figText { art: make([][]rune, f.header.charheight) })
 			i++
 
-
+			if word.width() > maxwidth {
+				panic("need to split word!")
+			}
 		}
 
 		for j, wordline := range word.art {

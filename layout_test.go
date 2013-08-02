@@ -125,33 +125,33 @@ func Test_addChar(t *testing.T) {
 	testAddCharLine("|_ ", "   _", "|__", t)
 }
 
-func testSmushamtLine(line string, char string, want int, t *testing.T) {
-	line_slice := make([][]rune, 1)
-	char_slice := make([][]rune, 1)
+func testSmushamtLine(l string, c string, want int, t *testing.T) {
+	line := newFigText(1)
+	char := newFigText(1)
 
-	line_slice[0] = []rune(line)
-	char_slice[0] = []rune(char)
+	(*line).art[0] = []rune(l)
+	(*char).art[0] = []rune(c)
 
 	s := testSettings(SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair)
 
-	if smushamt(char_slice, line_slice, s) != want {
-		t.Errorf("smushamt = %v, want %v", want)
+	if x := smushamt(char, line, s); x != want {
+		t.Errorf("smushamt = %v, want %v", x, want)
 	}
 }
 
-func testAddCharLine(line string, char string, expect string, t *testing.T) {
-	line_slice := make([][]rune, 1)
-	char_slice := make([][]rune, 1)
+func testAddCharLine(l string, c string, expect string, t *testing.T) {
+	line := newFigText(1)
+	char := newFigText(1)
 
-	line_slice[0] = []rune(line)
-	char_slice[0] = []rune(char)
+	(*line).art[0] = []rune(l)
+	(*char).art[0] = []rune(c)
 
 	s := testSettings(SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair)
 
-	addChar(&char_slice, &line_slice, s)
+	addChar(char, line, s)
 
-	if string(line_slice[0]) != expect {
-		t.Errorf("addChar made %v, expected %v", string(line_slice[0]), expect)
+	if string((*line).art[0]) != expect {
+		t.Errorf("addChar made %v, expected %v", string((*line).art[0]), expect)
 	}
 }
 
