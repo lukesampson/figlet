@@ -210,11 +210,18 @@ func getLines(msg string, f font, maxwidth int, s settings) []figText {
 	for _, word := range words {
 		if lines[i].width() + word.width() > maxwidth { // need to wrap
 			lines = append(lines, figText { art: make([][]rune, f.header.charheight) })
-			i++
 
 			if word.width() > maxwidth {
-				panic("need to split word!")
+				a, b := word.splitAt(maxwidth - lines[i].width() - 1)
+
+				// code dupe
+				for j, wordline := range a.art {
+					lines[i].art[j] = append(lines[i].art[j], wordline...)
+				}
+				word = *b
 			}
+
+			i++
 		}
 
 		for j, wordline := range word.art {
