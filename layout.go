@@ -199,6 +199,20 @@ func getWords(msg string, f font, s settings) []figText {
 	return words
 }
 
+func breakWord(word *figText, maxwidth int, f font, s settings) (*figText, *figText) {
+	h := word.height()
+	a, b := word, newFigText(h)
+
+	text := (*word).text
+
+	for i := len(text) - 1; i > 0 && a.width() > maxwidth; i-- {
+		a = getWord(text[:i], f, s)
+		b = getWord(text[i:], f, s)
+	}
+
+	return a, b
+}
+
 func getLines(msg string, f font, maxwidth int, s settings) []figText {
 	lines := make([]figText, 1)
 	words := getWords(msg, f, s)
@@ -212,7 +226,7 @@ func getLines(msg string, f font, maxwidth int, s settings) []figText {
 			lines = append(lines, figText { art: make([][]rune, f.header.charheight) })
 
 			if word.width() > maxwidth {
-				a, b := word.splitAt(maxwidth - lines[i].width() - 1)
+				a, b := breakWord(&word, maxwidth - lines[i].width() - 1, f, s)
 
 				// code dupe
 				for j, wordline := range a.art {
