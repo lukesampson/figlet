@@ -151,22 +151,18 @@ func smushamt(char [][]rune, line [][]rune, s settings) int {
 }
 
 type settings struct {
-	maxwidth int
 	smushmode int
 	hardblank rune
 	rtol bool
 }
 
-// Attempts to add the given character onto the end of the given line.
-// Returns true if this succeeded, false otherwise.
-func addChar(charp *[][]rune, linep *[][]rune, s settings) bool {
+// Adds the given character onto the end of the given line.
+func addChar(charp *[][]rune, linep *[][]rune, s settings) {
 	char, line := *charp, *linep
 	smushamount := smushamt(char, line, s)
 
 	linelen := len(line[0])
-	charheight, charwidth := len(char), len(char[0])
-
-	if linelen + charwidth - smushamount > s.maxwidth { return false }
+	charheight := len(char)
 
 	for row := 0; row < charheight; row++ {
 		if s.rtol { panic ("right-to-left not implemented") }
@@ -187,8 +183,6 @@ func addChar(charp *[][]rune, linep *[][]rune, s settings) bool {
 		}
 		line[row] = append(line[row], char[row][smushamount:]...)
 	}
-
-	return true
 }
 
 type figText struct {
@@ -226,7 +220,7 @@ func getWords(msg string, f font, s settings) []figText {
 	return words
 }
 
-func getLines(msg string, f font, s settings) []figText {
+func getLines(msg string, f font, maxwidth int, s settings) []figText {
 	lines := make([]figText, 1)
 	words := getWords(msg, f, s)
 
@@ -235,7 +229,7 @@ func getLines(msg string, f font, s settings) []figText {
 
 	i := 0
 	for _, word := range words {
-		if lines[i].width() + word.width() > s.maxwidth { // need to wrap
+		if lines[i].width() + word.width() > maxwidth { // need to wrap
 			fmt.Printf("wrapping at %v\n", word.text)
 			lines = append(lines, figText { art: make([][]rune, f.header.charheight) })
 			i++

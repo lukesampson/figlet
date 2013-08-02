@@ -21,7 +21,7 @@ func Test_smush_with_rch_empty_always_returns_lch(t *testing.T) {
 func Test_smush_with_smush_not_set_returns_null(t *testing.T) {
 	lch, rch := '|', '|'
 	if x := smushem(lch, rch, testSettings(0)); x != 0 {
-		t.Errorf("smushem(%q, %q, %v) = %q, want %q", lch, rch, smushmode, x, 0)
+		t.Errorf("smushem(%q, %q, %v) = %q, want %q", lch, rch, 0, x, 0)
 	}
 }
 
@@ -148,9 +148,7 @@ func testAddCharLine(line string, char string, expect string, t *testing.T) {
 
 	s := testSettings(SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair)
 
-	if !addChar(&char_slice, &line_slice, s) {
-		t.Errorf("addChar returned false")
-	}
+	addChar(&char_slice, &line_slice, s)
 
 	if string(line_slice[0]) != expect {
 		t.Errorf("addChar made %v, expected %v", string(line_slice[0]), expect)
@@ -162,7 +160,6 @@ func testSettings(smushmode int) settings {
 		smushmode: smushmode,
 		hardblank: '$',
 		rtol: false,
-		maxwidth: 80,
 	}
 }
 

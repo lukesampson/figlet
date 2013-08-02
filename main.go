@@ -11,17 +11,6 @@ const (
 	defaultFont = "standard"
 )
 
-// Globals affected by command line options
-var (
-	deutschflag bool
-	justification int
-	paragraphflag int
-	right2left bool
-	multibyte int
-	cmdinput bool
-	smushmode int
-)
-
 func printusage() {
 	fmt.Println("Usage: figlet [ -cklnoprstvxDELNRSWX ] [ -d fontdirectory ]")
 	fmt.Println("              [ -f fontfile ] [ -m smushmode ] [ -w outputwidth ]")
@@ -49,11 +38,10 @@ func main() {
 
 	s := settings {
 		smushmode: SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair,
-		maxwidth: 80,
 		hardblank: '$',
 		rtol: false	}
 
-	lines := getLines(msg, f, s)
+	lines := getLines(msg, f, 80, s)
 	printLines(lines)
 
 }
