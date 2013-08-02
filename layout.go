@@ -2,7 +2,7 @@ package main
 
 import (
 	"strings"
-	"fmt"
+	//"fmt"
 )
 
 // smush modes
@@ -16,16 +16,6 @@ const (
 	SMKern = 64
 	SMSmush = 128
 )
-
-// gets the font entry for the given character, or the 'missing'
-// character if the font doesn't contain this character
-func getChar(c rune, f font) [][]rune {
-	 l, ok := f.chars[c]
-	 if !ok {
-		l = f.chars[0]
-	 }
-	 return l
-}
 
 // Given 2 characters, attempts to smush them into 1, according to
 // smushmode.  Returns smushed character or '\0' if no smushing can be
@@ -104,25 +94,22 @@ func smushem(lch rune, rch rune, s settings) rune {
 
 // smushamt returns the maximum amount that the character can be smushed
 // into the line.
-func smushamt(char [][]rune, line [][]rune, s settings) int {
+func smushamt(char *figText, line *figText, s settings) int {
 	if s.smushmode & (SMSmush | SMKern) == 0 {
 		return 0;
   	}
-
-  	charwidth := len(char[0])
-  	charheight := len(char)
 
   	empty := func (ch rune) bool {
 		return ch == 0 || ch == ' '
 	}
 
-	maxsmush := charwidth// + 1
-	for row := 0; row < charheight; row++ {
+	maxsmush := char.width()
+	for row := 0; row < char.height(); row++ {
 		var left, right []rune
 		if s.rtol {
-			left, right = []rune(char[row]), []rune(line[row])
+			left, right = (*char).art[row], (*line).art[row]
 		} else {
-			left, right = []rune(line[row]), []rune(char[row])
+			left, right = (*line).art[row], (*char).art[row]
 		}
 
 		// find number of empty chars for left and right
@@ -157,31 +144,29 @@ type settings struct {
 }
 
 // Adds the given character onto the end of the given line.
-func addChar(charp *[][]rune, linep *[][]rune, s settings) {
-	char, line := *charp, *linep
+func addChar(char *figText, line *figText, s settings) {
 	smushamount := smushamt(char, line, s)
 
-	linelen := len(line[0])
-	charheight := len(char)
+	linelen := line.width()
 
-	for row := 0; row < charheight; row++ {
+	for row := 0; row < char.height(); row++ {
 		if s.rtol { panic ("right-to-left not implemented") }
 		for k := 0; k < smushamount; k++ {
 			column := linelen - 1
 
-			rch := rune(char[row][k])
+			rch := (*char).art[row][k]
 			var smushed rune
 			if column < 0 {
 				column = 0
 				smushed = rch
 			} else {
-				lch := rune(line[row][column])	
+				lch := (*line).art[row][column]
 				smushed = smushem(lch, rch, s)
 			}
 			
-			line[row] = append(line[row][:column], smushed)
+			(*line).art[row] = append((*line).art[row][:column], smushed)
 		}
-		line[row] = append(line[row], char[row][smushamount:]...)
+		(*line).art[row] = append((*line).art[row], (*char).art[row][smushamount:]...)
 	}
 }
 
@@ -190,8 +175,12 @@ type figText struct {
 	text string
 }
 
-func (ft figText) width() int {
+func (ft *figText) width() int {
 	return len(ft.art[0])
+}
+
+func (ft *figText) height() int {
+	return len(ft.art)
 }
 
 func (ft figText) String() string {
@@ -202,20 +191,30 @@ func (ft figText) String() string {
 	return str
 }
 
-func getWord(w string, f font, s settings) [][]rune {
-	word := make([][]rune, f.header.charheight)
+// gets the font entry for the given character, or the 'missing'
+// character if the font doesn't contain this character
+func getChar(c rune, f font) *figText {
+	 l, ok := f.chars[c]
+	 if !ok {
+		l = f.chars[0]
+	 }
+	 return figText { text: c, art: l }
+}
+
+func getWord(w string, f font, s settings) *figText {
+	word := figText { text: w, art: make([][]rune, f.header.charheight) }
 	for _, c := range w {
-		c := getChar(c, f)
+		c := figText { art: getChar(c, f) }
 		addChar(&c, &word, s)
 	}
 
-	return word
+	return &word
 }
 
 func getWords(msg string, f font, s settings) []figText {
 	words := make([]figText, 0)
 	for _, word := range strings.Split(msg, " ") {
-		words = append(words, figText {	text: word,	art: getWord(word, f, s) })
+		words = append(words, *getWord(word, f, s))
 	}
 	return words
 }
@@ -230,7 +229,6 @@ func getLines(msg string, f font, maxwidth int, s settings) []figText {
 	i := 0
 	for _, word := range words {
 		if lines[i].width() + word.width() > maxwidth { // need to wrap
-			fmt.Printf("wrapping at %v\n", word.text)
 			lines = append(lines, figText { art: make([][]rune, f.header.charheight) })
 			i++
 		}
