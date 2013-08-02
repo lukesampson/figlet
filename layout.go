@@ -2,7 +2,7 @@ package main
 
 import (
 	"strings"
-	//"fmt"
+	"fmt"
 )
 
 // smush modes
@@ -233,17 +233,22 @@ func getWords(msg string, f font, s settings) []figText {
 }
 
 func getLines(msg string, f font, s settings) []figText {
-	lines := make([]figText, 1) // make room for at least one line
+	lines := make([]figText, 1)
 	words := getWords(msg, f, s)
 
-	// kludge: add first line
-	lines[0] = figText { }
-	lines[0].art = make([][]rune, f.header.charheight)
+	// start off the first line
+	lines[0] = figText { art: make([][]rune, f.header.charheight) }
 
-	// smoodge everything together for testing
+	i := 0
 	for _, word := range words {
+		if lines[i].width() + word.width() > s.maxwidth { // need to wrap
+			fmt.Printf("wrapping at %v\n", word.text)
+			lines = append(lines, figText { art: make([][]rune, f.header.charheight) })
+			i++
+		}
+
 		for j, wordline := range word.art {
-			lines[0].art[j] = append(lines[0].art[j], wordline...)
+			lines[i].art[j] = append(lines[i].art[j], wordline...)
 		}
 	}
 

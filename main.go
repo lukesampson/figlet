@@ -53,6 +53,7 @@ func main() {
 		hardblank: '$',
 		rtol: false	}
 
-	printLines(getLines(msg, f, s))
+	lines := getLines(msg, f, s)
+	printLines(lines)
 
 }
