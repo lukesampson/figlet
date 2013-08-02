@@ -217,7 +217,7 @@ func getLines(msg string, f font, maxwidth int, s settings) []figText {
 	lines := make([]figText, 1)
 	words := getWords(msg, f, s)
 
-	// empty first line
+	// make empty first line
 	lines[0] = *newFigText(f.header.charheight)
 
 	i := 0

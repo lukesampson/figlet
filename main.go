@@ -17,10 +17,11 @@ func printusage() {
 	fmt.Println("              [ -C controlfile ] [ -I infocode ] [ message ]")
 }
 
-func printLines(lines []figText) {
+func printLines(lines []figText, hardblank rune) {
 	for _, line := range lines {
 		for _, subline := range line.art {
 			for _, outchar := range subline {
+				if outchar == hardblank { outchar = ' '}
 				fmt.Printf("%c", outchar)
 			}
 			fmt.Println()
@@ -42,6 +43,6 @@ func main() {
 		rtol: false	}
 
 	lines := getLines(msg, f, 80, s)
-	printLines(lines)
+	printLines(lines, s.hardblank)
 
 }
