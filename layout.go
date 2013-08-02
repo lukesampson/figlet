@@ -191,6 +191,10 @@ func (ft figText) String() string {
 	return str
 }
 
+func newFigText(height int) *figText {
+	return &figText { art: make([][]rune, height) }
+}
+
 // gets the font entry for the given character, or the 'missing'
 // character if the font doesn't contain this character
 func getChar(c rune, f font) *figText {
@@ -198,17 +202,18 @@ func getChar(c rune, f font) *figText {
 	 if !ok {
 		l = f.chars[0]
 	 }
-	 return figText { text: c, art: l }
+	 return &figText { text: string(c), art: l }
 }
 
 func getWord(w string, f font, s settings) *figText {
-	word := figText { text: w, art: make([][]rune, f.header.charheight) }
+	word := newFigText(f.header.charheight)
+	(*word).text = w
 	for _, c := range w {
-		c := figText { art: getChar(c, f) }
-		addChar(&c, &word, s)
+		c := getChar(c, f)
+		addChar(c, word, s)
 	}
 
-	return &word
+	return word
 }
 
 func getWords(msg string, f font, s settings) []figText {
@@ -223,14 +228,16 @@ func getLines(msg string, f font, maxwidth int, s settings) []figText {
 	lines := make([]figText, 1)
 	words := getWords(msg, f, s)
 
-	// start off the first line
-	lines[0] = figText { art: make([][]rune, f.header.charheight) }
+	// empty first line
+	lines[0] = *newFigText(f.header.charheight)
 
 	i := 0
 	for _, word := range words {
 		if lines[i].width() + word.width() > maxwidth { // need to wrap
 			lines = append(lines, figText { art: make([][]rune, f.header.charheight) })
 			i++
+
+
 		}
 
 		for j, wordline := range word.art {
