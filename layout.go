@@ -168,8 +168,6 @@ func addChar(charp *[][]rune, linep *[][]rune, s settings) bool {
 
 	if linelen + charwidth - smushamount > s.maxwidth { return false }
 
-	//fmt.Printf("smushamount: %v\n", smushamount)
-
 	for row := 0; row < charheight; row++ {
 		if s.rtol { panic ("right-to-left not implemented") }
 		for k := 0; k < smushamount; k++ {
@@ -183,16 +181,12 @@ func addChar(charp *[][]rune, linep *[][]rune, s settings) bool {
 			} else {
 				lch := rune(line[row][column])	
 				smushed = smushem(lch, rch, s)
-
-				//fmt.Printf("k: %v, col: %v, lch: %q, rch: %q, smushed: %q\n", k, column, lch, rch, smushed)
 			}
 			
 			line[row] = append(line[row][:column], smushed)
 		}
 		line[row] = append(line[row], char[row][smushamount:]...)
 	}
-
-	//fmt.Println(figText { art: line })
 
 	return true
 }
