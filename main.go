@@ -15,17 +15,27 @@ const (
 func printusage() {
 	fmt.Println("Usage: figlet [ -cklnoprstvxDELNRSWX ] [ -d fontdirectory ]")
 	fmt.Println("              [ -f fontfile ] [ -m smushmode ] [ -w outputwidth ]")
-	fmt.Println("              [ -C controlfile ] [ -I infocode ] [ message ]")
+	fmt.Println("              [ -I infocode ] [ message ]")
 }
 
-func printLines(lines []figText, hardblank rune, maxwidth int) {
+func printLines(lines []figText, hardblank rune, maxwidth int, align string) {
+	padleft := func(linelen int) {
+		switch align {
+		case "right":
+			fmt.Print(strings.Repeat(" ", maxwidth - linelen))
+		case "center":
+			fmt.Print(strings.Repeat(" ", (maxwidth - linelen) / 2))
+		}
+	}
+
 	for _, line := range lines {
 		for _, subline := range line.art {
+			padleft(len(subline))
 			for _, outchar := range subline {
 				if outchar == hardblank { outchar = ' '}
 				fmt.Printf("%c", outchar)
 			}
-			if len(subline) < maxwidth {
+			if len(subline) < maxwidth && align != "right" {
 				fmt.Println()
 			}
 		}
@@ -33,10 +43,19 @@ func printLines(lines []figText, hardblank rune, maxwidth int) {
 }
 
 func main() {
-	fontname := flag.String("f", defaultFont, "name of the font")
-	rtol := flag.Bool("R", false, "right-to-left")
+	fontname := flag.String("f", defaultFont, "use this font")
+	rtol := flag.Bool("R", false, "reverse output")
+	alignRight := flag.Bool("r", false, "right-align output")
+	alignCenter := flag.Bool("c", false, "center-align output")
 
 	flag.Parse()
+
+	var align string
+	if *alignRight {
+		align = "right"
+	} else if *alignCenter {
+		align = "center"
+	}
 
 	f, err := getFont(*fontname)
 	if err != nil {
@@ -53,6 +72,6 @@ func main() {
 	maxwidth := 80
 
 	lines := getLines(msg, f, maxwidth, s)
-	printLines(lines, s.hardblank, maxwidth)
+	printLines(lines, s.hardblank, maxwidth, align)
 
 }
