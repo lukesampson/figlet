@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"flag"
 )
 
 const (
@@ -30,17 +31,20 @@ func printLines(lines []figText, hardblank rune) {
 }
 
 func main() {
-	f, err := getFont("standard")
+	fontname := flag.String("f", defaultFont, "name of the font")
+	flag.Parse()
+
+	f, err := getFont(*fontname)
 	if err != nil {
 		fmt.Println(err); os.Exit(1)
 	}
 
-	msg := strings.Join(os.Args[1:], " ")
+	msg := strings.Join(flag.Args(), " ")
 
 	s := settings {
 		smushmode: SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair,
 		hardblank: '$',
-		rtol: true }
+		rtol: false }
 
 	lines := getLines(msg, f, 80, s)
 	printLines(lines, s.hardblank)
