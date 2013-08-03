@@ -146,27 +146,35 @@ type settings struct {
 // Adds the given character onto the end of the given line.
 func addChar(char *figText, line *figText, s settings) {
 	smushamount := smushamt(char, line, s)
+	smushChar(char, line, smushamount, s)
+}
 
+func smushChar(char *figText, line *figText, amount int, s settings) {
 	linelen := line.width()
 
 	for row := 0; row < char.height(); row++ {
-		if s.rtol { panic ("right-to-left not implemented") }
-		for k := 0; k < smushamount; k++ {
-			column := linelen - 1
+		//fmt.Printf("smushChar row %v: %q + %q (%v)\n", row, string((*line).art[row]), string((*char).art[row]), amount)
 
-			rch := (*char).art[row][k]
-			var smushed rune
-			if column < 0 {
-				column = 0
-				smushed = rch
-			} else {
-				lch := (*line).art[row][column]
-				smushed = smushem(lch, rch, s)
+		if s.rtol { panic ("right-to-left not implemented") }
+		for k := 0; k < amount; k++ {
+			column := linelen - amount + k
+			if column < 0 { column = 0 }
+
+			if column >= len((*line).art[row]) {
+				(*line).art[row] = append((*line).art[row], ' ')
 			}
+
+			lch := (*line).art[row][column]
+			rch := (*char).art[row][k]
 			
-			(*line).art[row] = append((*line).art[row][:column], smushed)
+			smushed := smushem(lch, rch, s)
+
+			//fmt.Printf("k: %v, col: %v, lch: %q, rch: %q, smushed: %q\n", k, column, lch, rch, smushed)
+			
+			(*line).art[row][column] = smushed
+
 		}
-		(*line).art[row] = append((*line).art[row], (*char).art[row][smushamount:]...)
+		(*line).art[row] = append((*line).art[row], (*char).art[row][amount:]...)
 	}
 }
 

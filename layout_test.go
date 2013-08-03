@@ -121,8 +121,15 @@ func Test_smushamt(t *testing.T) {
 }
 
 func Test_addChar(t *testing.T) {
+	testAddCharLine("", "", "", t)
+	testAddCharLine("", "__", "__", t)
 	testAddCharLine("|_ ", "  _", "|__", t)
 	testAddCharLine("|_ ", "   _", "|__", t)
+}
+
+func Test_smushChar(t *testing.T) {
+	testSmushCharLine("/ ", "  / ", 4, "/ ", t)
+	testSmushCharLine("", " _", 1, " _", t)
 }
 
 func testSmushamtLine(l string, c string, want int, t *testing.T) {
@@ -152,6 +159,26 @@ func testAddCharLine(l string, c string, expect string, t *testing.T) {
 
 	if string((*line).art[0]) != expect {
 		t.Errorf("addChar made %v, expected %v", string((*line).art[0]), expect)
+	}
+}
+
+func testSmushCharLine(l string, c string, amount int, expect string, t *testing.T) {
+	if amount > len(c) {
+		t.Errorf("amount %v is > character length %v", amount, len(c))
+		return
+	}
+	line := newFigText(1)
+	char := newFigText(1)
+
+	(*line).art[0] = []rune(l)
+	(*char).art[0] = []rune(c)
+
+	s := testSettings(SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair)
+
+	smushChar(char, line, amount, s)
+
+	if string((*line).art[0]) != expect {
+		t.Errorf("smushChar %q + %q made %q, expected %v", l, c, string((*line).art[0]), expect)
 	}
 }
 
