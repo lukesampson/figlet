@@ -163,26 +163,18 @@ func smushChar(char *figText, line *figText, amount int, s settings) figText {
 			right = &(*line).art[row]
 		}
 
-		//fmt.Printf("smushChar row %v: %q + %q (%v), width: %v\n", row, string(*left), string(*right), amount, linelen)
-
 		for k := 0; k < amount; k++ {
 			column := linelen - amount + k
 			if column < 0 { column = 0 }
 
-			rch := (*right)[k]
-
-			//fmt.Printf("k: %v, column: %v, len(*left): %v\n", k, column, len(*left))
 			if column >= len(*left) {
 				continue // assume a space is on the right, absorb it
 			}
 
 			lch := (*left)[column]
-			
-			
-			smushed := smushem(lch, rch, s)
+			rch := (*right)[k]
 
-			//fmt.Printf("k: %v, col: %v, lch: %q, rch: %q, smushed: %q\n", k, column, lch, rch, smushed)
-			
+			smushed := smushem(lch, rch, s)			
 			(*left)[column] = smushed
 
 		}
@@ -204,12 +196,11 @@ func getChar(c rune, f font) *figText {
 
 func getWord(w string, f font, s settings) *figText {
 	word := newFigText(f.header.charheight)
-	(*word).text = w
 	for _, c := range w {
 		c := getChar(c, f)
 		*word = addChar(c, word, s)
 	}
-
+	(*word).text = w
 	return word
 }
 
@@ -231,8 +222,6 @@ func breakWord(word *figText, maxwidth int, f font, s settings) (*figText, *figT
 		a = getWord(text[:i], f, s)
 		b = getWord(text[i:], f, s)
 	}
-
-	//fmt.Printf("broke into %s, %s\n", (*a).text, (*b).text)
 
 	return a, b
 }
@@ -256,7 +245,6 @@ func getLines(msg string, f font, maxwidth int, s settings) []figText {
 
 	linenum := 0
 	for i, word := range words {
-
 		// add a space between words
 		if i > 0 {
 			lineWithSpace := addChar(getChar(' ', f), &lines[linenum], s) 
