@@ -185,8 +185,7 @@ func getFont(name string) (font, error) {
 		return font { }, err
 	}
 
-	fontname := defaultFont
-	fontpath, err := findFont(fontsdir, fontname)
+	fontpath, err := findFont(fontsdir, name)
 	if err != nil {
 		return font { }, err
 	}

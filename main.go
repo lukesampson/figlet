@@ -30,7 +30,7 @@ func printLines(lines []figText, hardblank rune) {
 }
 
 func main() {
-	f, err := getFont(defaultFont)
+	f, err := getFont("standard")
 	if err != nil {
 		fmt.Println(err); os.Exit(1)
 	}
@@ -40,7 +40,7 @@ func main() {
 	s := settings {
 		smushmode: SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair,
 		hardblank: '$',
-		rtol: false	}
+		rtol: true }
 
 	lines := getLines(msg, f, 80, s)
 	printLines(lines, s.hardblank)

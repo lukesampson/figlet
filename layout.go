@@ -129,8 +129,6 @@ func smushamt(char *figText, line *figText, s settings) int {
 			}
 		}
 
-		//fmt.Printf("i: %v, j: %v, rowsmush: %v\n", i, j, rowsmush)
-
 		if rowsmush < maxsmush { maxsmush = rowsmush }
 	}
 
@@ -151,30 +149,42 @@ func addChar(char *figText, line *figText, s settings) {
 
 func smushChar(char *figText, line *figText, amount int, s settings) {
 	linelen := line.width()
+	if(s.rtol) {
+		linelen = char.width()
+	}
 
 	for row := 0; row < char.height(); row++ {
-		//fmt.Printf("smushChar row %v: %q + %q (%v)\n", row, string((*line).art[row]), string((*char).art[row]), amount)
+		left, right := &(*line).art[row], &(*char).art[row]
+		if s.rtol {
+			left, right = right, left
+		}
 
-		if s.rtol { panic ("right-to-left not implemented") }
+		//fmt.Printf("smushChar row %v: %q + %q (%v), width: %v\n", row, string(*left), string(*right), amount, linelen)
+
 		for k := 0; k < amount; k++ {
 			column := linelen - amount + k
 			if column < 0 { column = 0 }
 
-			if column >= len((*line).art[row]) {
-				(*line).art[row] = append((*line).art[row], ' ')
+			//fmt.Printf("k: %v, column: %v, len(*left): %v\n", k, column, len(*left))
+			if column >= len(*left) {
+				*left = append(*left, ' ')
 			}
 
-			lch := (*line).art[row][column]
-			rch := (*char).art[row][k]
+			lch := (*left)[column]
+			rch := (*right)[k]
 			
 			smushed := smushem(lch, rch, s)
 
 			//fmt.Printf("k: %v, col: %v, lch: %q, rch: %q, smushed: %q\n", k, column, lch, rch, smushed)
 			
-			(*line).art[row][column] = smushed
+			(*left)[column] = smushed
 
 		}
-		(*line).art[row] = append((*line).art[row], (*char).art[row][amount:]...)
+		*left = append(*left, (*right)[amount:]...)
+	}
+
+	if s.rtol { // result is in char: copy it back to line
+		(*line) = (*char)
 	}
 }
 
