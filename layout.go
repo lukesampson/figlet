@@ -2,7 +2,7 @@ package main
 
 import (
 	"strings"
-	"fmt"
+	//"fmt"
 )
 
 // smush modes
@@ -142,12 +142,12 @@ type settings struct {
 }
 
 // Adds the given character onto the end of the given line.
-func addChar(char *figText, line *figText, s settings) {
+func addChar(char *figText, line *figText, s settings) figText {
 	smushamount := smushamt(char, line, s)
-	smushChar(char, line, smushamount, s)
+	return smushChar(char, line, smushamount, s)
 }
 
-func smushChar(char *figText, line *figText, amount int, s settings) {
+func smushChar(char *figText, line *figText, amount int, s settings) figText {
 	var result *figText
 	if s.rtol {
 		result = char.copy()
@@ -189,7 +189,7 @@ func smushChar(char *figText, line *figText, amount int, s settings) {
 		*left = append(*left, (*right)[amount:]...)
 	}
 
-	*line = *result
+	return *result
 }
 
 // gets the font entry for the given character, or the 'missing'
@@ -207,7 +207,7 @@ func getWord(w string, f font, s settings) *figText {
 	(*word).text = w
 	for _, c := range w {
 		c := getChar(c, f)
-		addChar(c, word, s)
+		*word = addChar(c, word, s)
 	}
 
 	return word
@@ -232,7 +232,7 @@ func breakWord(word *figText, maxwidth int, f font, s settings) (*figText, *figT
 		b = getWord(text[i:], f, s)
 	}
 
-	fmt.Printf("broke into %s, %s\n", (*a).text, (*b).text)
+	//fmt.Printf("broke into %s, %s\n", (*a).text, (*b).text)
 
 	return a, b
 }
@@ -254,22 +254,32 @@ func getLines(msg string, f font, maxwidth int, s settings) []figText {
 	// make empty first line
 	lines[0] = *newFigText(f.header.charheight)
 
-	i := 0
-	for _, word := range words {
-		if lines[i].width() + word.width() > maxwidth { // need to wrap
+	linenum := 0
+	for i, word := range words {
+
+		// add a space between words
+		if i > 0 {
+			lineWithSpace := addChar(getChar(' ', f), &lines[linenum], s) 
+			if lineWithSpace.width() <= maxwidth {
+				lines[linenum] = lineWithSpace
+			}
+		}
+
+		// check if we need to wrap
+		if lines[linenum].width() + word.width() > maxwidth { // need to wrap
 			lines = append(lines, figText { art: make([][]rune, f.header.charheight) })
 
 			if word.width() > maxwidth {
-				a, b := breakWord(&word, maxwidth - lines[i].width(), f, s)
+				a, b := breakWord(&word, maxwidth - lines[linenum].width(), f, s)
 
-				addWordToLine(lines[i], *a, s.rtol)
+				addWordToLine(lines[linenum], *a, s.rtol)
 				word = *b
 			}
 
-			i++
+			linenum++
 		}
 
-		addWordToLine(lines[i], word, s.rtol)
+		addWordToLine(lines[linenum], word, s.rtol)
 	}
 
 	return lines
