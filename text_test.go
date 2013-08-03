@@ -29,4 +29,10 @@ func TestCopy(t *testing.T) {
 	if x := (*b).text; x != "test" {
 		t.Errorf("text for copy was updated to %v\n", x)
 	}
+
+	(*a).art[1][1] = 'X'
+
+	if fmt.Sprint(b) != bstr {
+		t.Errorf("b.art changed when a.art changed")
+	}
 }

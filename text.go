@@ -29,7 +29,13 @@ func (ft *figText) copy() *figText {
 	copied := newFigText(ft.height())
 
 	(*copied).text = (*ft).text
-	copy((*copied).art, (*ft).art)
+	for i := 0; i < ft.height(); i++ {
+		width := ft.width()
+		(*copied).art[i] = make([]rune, width)
+		for j := 0; j < width; j++ {
+			(*copied).art[i][j] = (*ft).art[i][j]
+		}
+	}
 
 	return copied
 }
