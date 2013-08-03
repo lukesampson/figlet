@@ -18,14 +18,16 @@ func printusage() {
 	fmt.Println("              [ -C controlfile ] [ -I infocode ] [ message ]")
 }
 
-func printLines(lines []figText, hardblank rune) {
+func printLines(lines []figText, hardblank rune, maxwidth int) {
 	for _, line := range lines {
 		for _, subline := range line.art {
 			for _, outchar := range subline {
 				if outchar == hardblank { outchar = ' '}
 				fmt.Printf("%c", outchar)
 			}
-			fmt.Println()
+			if len(subline) < maxwidth {
+				fmt.Println()
+			}
 		}
 	}
 }
@@ -49,6 +51,6 @@ func main() {
 		rtol: *rtol }
 
 	lines := getLines(msg, f, 80, s)
-	printLines(lines, s.hardblank)
+	printLines(lines, s.hardblank, 80)
 
 }

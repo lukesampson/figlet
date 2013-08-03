@@ -2,7 +2,7 @@ package main
 
 import (
 	"strings"
-	//"fmt"
+	"fmt"
 )
 
 // smush modes
@@ -230,6 +230,8 @@ func breakWord(word *figText, maxwidth int, f font, s settings) (*figText, *figT
 		b = getWord(text[i:], f, s)
 	}
 
+	fmt.Printf("broke into %s, %s\n", (*a).text, (*b).text)
+
 	return a, b
 }
 
@@ -256,7 +258,7 @@ func getLines(msg string, f font, maxwidth int, s settings) []figText {
 			lines = append(lines, figText { art: make([][]rune, f.header.charheight) })
 
 			if word.width() > maxwidth {
-				a, b := breakWord(&word, maxwidth - lines[i].width() - 1, f, s)
+				a, b := breakWord(&word, maxwidth - lines[i].width(), f, s)
 
 				addWordToLine(lines[i], *a, s.rtol)
 				word = *b
