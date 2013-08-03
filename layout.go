@@ -233,6 +233,16 @@ func breakWord(word *figText, maxwidth int, f font, s settings) (*figText, *figT
 	return a, b
 }
 
+func addWordToLine(line figText, word figText, rtol bool) {
+	for i, wordline := range word.art {
+		if(rtol) {
+			line.art[i] = append(wordline, line.art[i]...)
+		} else {
+			line.art[i] = append(line.art[i], wordline...)
+		}
+	}
+}
+
 func getLines(msg string, f font, maxwidth int, s settings) []figText {
 	lines := make([]figText, 1)
 	words := getWords(msg, f, s)
@@ -248,19 +258,14 @@ func getLines(msg string, f font, maxwidth int, s settings) []figText {
 			if word.width() > maxwidth {
 				a, b := breakWord(&word, maxwidth - lines[i].width() - 1, f, s)
 
-				// code dupe
-				for j, wordline := range a.art {
-					lines[i].art[j] = append(lines[i].art[j], wordline...)
-				}
+				addWordToLine(lines[i], *a, s.rtol)
 				word = *b
 			}
 
 			i++
 		}
 
-		for j, wordline := range word.art {
-			lines[i].art[j] = append(lines[i].art[j], wordline...)
-		}
+		addWordToLine(lines[i], word, s.rtol)
 	}
 
 	return lines
