@@ -148,15 +148,19 @@ func addChar(char *figText, line *figText, s settings) {
 }
 
 func smushChar(char *figText, line *figText, amount int, s settings) {
-	linelen := line.width()
-	if(s.rtol) {
-		linelen = char.width()
+	var result *figText
+	if s.rtol {
+		result = char.copy()
+	} else {
+		result = line.copy()
 	}
 
+	linelen := result.width()
+
 	for row := 0; row < char.height(); row++ {
-		left, right := &(*line).art[row], &(*char).art[row]
+		left, right := &(*result).art[row], &(*char).art[row]
 		if s.rtol {
-			left, right = right, left
+			right = &(*line).art[row]
 		}
 
 		//fmt.Printf("smushChar row %v: %q + %q (%v), width: %v\n", row, string(*left), string(*right), amount, linelen)
@@ -183,9 +187,7 @@ func smushChar(char *figText, line *figText, amount int, s settings) {
 		*left = append(*left, (*right)[amount:]...)
 	}
 
-	if s.rtol { // result is in char: copy it back to line
-		(*line) = (*char)
-	}
+	(*line) = (*result)
 }
 
 // gets the font entry for the given character, or the 'missing'

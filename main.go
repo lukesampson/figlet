@@ -40,7 +40,7 @@ func main() {
 	s := settings {
 		smushmode: SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair,
 		hardblank: '$',
-		rtol: true }
+		rtol: false }
 
 	lines := getLines(msg, f, 80, s)
 	printLines(lines, s.hardblank)

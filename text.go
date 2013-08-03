@@ -25,3 +25,12 @@ func (ft *figText) String() string {
 	return str
 }
 
+func (ft *figText) copy() *figText {
+	copied := newFigText(ft.height())
+
+	(*copied).text = (*ft).text
+	copy((*copied).art, (*ft).art)
+
+	return copied
+}
+
