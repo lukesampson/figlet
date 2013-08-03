@@ -169,13 +169,15 @@ func smushChar(char *figText, line *figText, amount int, s settings) {
 			column := linelen - amount + k
 			if column < 0 { column = 0 }
 
+			rch := (*right)[k]
+
 			//fmt.Printf("k: %v, column: %v, len(*left): %v\n", k, column, len(*left))
 			if column >= len(*left) {
-				*left = append(*left, ' ')
+				continue // assume a space is on the right, absorb it
 			}
 
 			lch := (*left)[column]
-			rch := (*right)[k]
+			
 			
 			smushed := smushem(lch, rch, s)
 
