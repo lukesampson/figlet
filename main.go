@@ -46,11 +46,13 @@ func main() {
 	msg := strings.Join(flag.Args(), " ")
 
 	s := settings {
-		smushmode: SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair,
+		smushmode: f.header.smush2,
 		hardblank: '$',
 		rtol: *rtol }
 
-	lines := getLines(msg, f, 80, s)
-	printLines(lines, s.hardblank, 80)
+	maxwidth := 80
+
+	lines := getLines(msg, f, maxwidth, s)
+	printLines(lines, s.hardblank, maxwidth)
 
 }
