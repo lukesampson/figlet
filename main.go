@@ -32,6 +32,8 @@ func printLines(lines []figText, hardblank rune) {
 
 func main() {
 	fontname := flag.String("f", defaultFont, "name of the font")
+	rtol := flag.Bool("R", false, "right-to-left")
+
 	flag.Parse()
 
 	f, err := getFont(*fontname)
@@ -44,7 +46,7 @@ func main() {
 	s := settings {
 		smushmode: SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair,
 		hardblank: '$',
-		rtol: false }
+		rtol: *rtol }
 
 	lines := getLines(msg, f, 80, s)
 	printLines(lines, s.hardblank)
