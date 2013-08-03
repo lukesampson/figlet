@@ -187,7 +187,7 @@ func smushChar(char *figText, line *figText, amount int, s settings) {
 		*left = append(*left, (*right)[amount:]...)
 	}
 
-	(*line) = (*result)
+	*line = *result
 }
 
 // gets the font entry for the given character, or the 'missing'
