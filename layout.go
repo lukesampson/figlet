@@ -33,8 +33,6 @@ func smushem(lch rune, rch rune, s settings) rune {
 	if lch == ' ' { return rch }
 	if rch == ' ' { return lch }
 
-	//fmt.Printf("smushem %q + %q\n", lch, rch)
-
 	if s.smushmode & SMSmush == 0 { // smush not enabled
 		return 0
 	}
@@ -97,8 +95,6 @@ func smushem(lch rune, rch rune, s settings) rune {
 // smushamt returns the maximum amount that the character can be smushed
 // into the line.
 func smushamt(char *figText, line *figText, s settings) int {
-	//fmt.Println(line)
-	//fmt.Println(char)
 	if s.smushmode & (SMSmush | SMKern) == 0 {
 		return 0;
   	}
@@ -123,24 +119,18 @@ func smushamt(char *figText, line *figText, s settings) int {
 
 		// the amount of smushing possible just by removing empty spaces
 		rowsmush := j + i
-		//fmt.Printf("j: %v, i: %v, rowsmush: %v\n", j, i, rowsmush)
 
 		if i < len(left) && j < len(right) {
 			// see if we can smush it even further
 			lch := left[len(left) - 1 - i]
 			rch := right[j]
 			if !empty(lch) && !empty(rch) {
-				if smushem(lch, rch, s) != 0 {
-					//fmt.Printf("managed to smush %q + %q (%v)\n", lch, rch, s.smushmode)
-					rowsmush++
-				}
+				if smushem(lch, rch, s) != 0 { rowsmush++ }
 			}
 		}
 
 		if rowsmush < maxsmush { maxsmush = rowsmush }
 	}
-
-	//fmt.Printf("maxsmush: %v\n", maxsmush)
 	return maxsmush;
 }
 
@@ -166,8 +156,6 @@ func smushChar(char *figText, line *figText, amount int, s settings) figText {
 
 	linelen := result.width()
 
-	//fmt.Println("smushamount", amount)
-
 	for row := 0; row < char.height(); row++ {
 		left, right := &(*result).art[row], &(*char).art[row]
 		if s.rtol {
@@ -180,9 +168,12 @@ func smushChar(char *figText, line *figText, amount int, s settings) figText {
 
 			rch := (*right)[k]
 			
-			if column >= len(*left) {
-				if rch == ' ' { continue } // absorb space
-				*left = append(*left, ' ')
+			if column >= len(*left) { // left is zero-length
+				// use rch if not space, absorb space otherwise
+				if rch != ' ' {
+					*left = append(*left, rch)
+				}
+				continue
 			}
 
 			lch := (*left)[column]
@@ -253,7 +244,6 @@ func getLines(msg string, f font, maxwidth int, s settings) []figText {
 		if i > 0 {
 			// don't smush space
 			lineWithSpace := smushChar(getChar(' ', f), &lines[linenum], 0, s)
-			//fmt.Println(&lineWithSpace)
 			if lineWithSpace.width() <= maxwidth {
 				lines[linenum] = lineWithSpace
 			}
