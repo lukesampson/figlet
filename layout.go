@@ -2,7 +2,7 @@ package main
 
 import (
 	"strings"
-	"fmt"
+	//"fmt"
 )
 
 // smush modes
@@ -33,7 +33,7 @@ func smushem(lch rune, rch rune, s settings) rune {
 	if lch == ' ' { return rch }
 	if rch == ' ' { return lch }
 
-	fmt.Printf("smushem %q + %q\n", lch, rch)
+	//fmt.Printf("smushem %q + %q\n", lch, rch)
 
 	if s.smushmode & SMSmush == 0 { // smush not enabled
 		return 0
@@ -240,16 +240,6 @@ func breakWord(word *figText, maxwidth int, f font, s settings) (*figText, *figT
 	return a, b
 }
 
-func addWordToLine(line figText, word figText, rtol bool) {
-	for i, wordline := range word.art {
-		if(rtol) {
-			line.art[i] = append(wordline, line.art[i]...)
-		} else {
-			line.art[i] = append(line.art[i], wordline...)
-		}
-	}
-}
-
 func getLines(msg string, f font, maxwidth int, s settings) []figText {
 	lines := make([]figText, 1)
 	words := getWords(msg, f, s)
@@ -261,9 +251,8 @@ func getLines(msg string, f font, maxwidth int, s settings) []figText {
 	for i, word := range words {
 		// add a space between words
 		if i > 0 {
-			//fmt.Println(getChar('t', f))
-			//fmt.Println(getChar(' ', f))
-			lineWithSpace := addChar(getChar(' ', f), &lines[linenum], s)
+			// don't smush space
+			lineWithSpace := smushChar(getChar(' ', f), &lines[linenum], 0, s)
 			//fmt.Println(&lineWithSpace)
 			if lineWithSpace.width() <= maxwidth {
 				lines[linenum] = lineWithSpace
@@ -277,14 +266,14 @@ func getLines(msg string, f font, maxwidth int, s settings) []figText {
 			if word.width() > maxwidth {
 				a, b := breakWord(&word, maxwidth - lines[linenum].width(), f, s)
 
-				addWordToLine(lines[linenum], *a, s.rtol)
+				lines[linenum] = addChar(a, &lines[linenum], s)
 				word = *b
 			}
 
 			linenum++
 		}
 
-		addWordToLine(lines[linenum], word, s.rtol)
+		lines[linenum] = addChar(&word, &lines[linenum], s)
 	}
 
 	return lines
