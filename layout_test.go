@@ -49,6 +49,8 @@ func Test_smush_universal(t *testing.T) {
 	if x := smushem(lch, rch, s); x != rch {
 		t.Errorf("should return rch when !right2left, returned %q", x)
 	}
+
+	testSmush('|', '$', s.smushmode, '|', t)
 }
 
 func Test_smush_combines_2_hardblanks_when_SMHardBlank(t *testing.T) {
@@ -116,20 +118,28 @@ func Test_smush_bigX(t *testing.T) {
 	testSmush('>', '<', mode, 'X', t)
 }
 
+func Test_smush_hardblank(t *testing.T) {
+	mode := SMKern + SMSmush + SMHardBlank
+	testSmush('$', '$', mode, '$', t)
+	testSmush(' ', '$', mode, '$', t)
+}
+
 func Test_smushamt(t *testing.T) {
 	testSmushamtLine("|_ ", "  _", 3, t)
+	testSmushamtLine("", "__", 0, t)
 }
 
 func Test_addChar(t *testing.T) {
 	testAddCharLine("", "", "", t)
 	testAddCharLine("", "__", "__", t)
+	testAddCharLine("", " __", "__", t)
 	testAddCharLine("|_ ", "  _", "|__", t)
 	testAddCharLine("|_ ", "   _", "|__", t)
 }
 
 func Test_smushChar(t *testing.T) {
 	testSmushCharLine("/ ", "  / ", 4, "/ ", t)
-	testSmushCharLine("", " _", 1, " _", t)
+	testSmushCharLine("", " _", 1, "_", t)
 }
 
 func testSmushamtLine(l string, c string, want int, t *testing.T) {
@@ -155,10 +165,10 @@ func testAddCharLine(l string, c string, expect string, t *testing.T) {
 
 	s := testSettings(SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair)
 
-	addChar(char, line, s)
+	result := addChar(char, line, s)
 
-	if string((*line).art[0]) != expect {
-		t.Errorf("addChar made %v, expected %v", string((*line).art[0]), expect)
+	if string(result.art[0]) != expect {
+		t.Errorf("addChar %q + %q made %q, expected %q", l, c, string((*line).art[0]), expect)
 	}
 }
 
@@ -175,10 +185,10 @@ func testSmushCharLine(l string, c string, amount int, expect string, t *testing
 
 	s := testSettings(SMKern + SMSmush + SMEqual + SMLowLine + SMHierarchy + SMPair)
 
-	smushChar(char, line, amount, s)
+	result := smushChar(char, line, amount, s)
 
-	if string((*line).art[0]) != expect {
-		t.Errorf("smushChar %q + %q made %q, expected %v", l, c, string((*line).art[0]), expect)
+	if string(result.art[0]) != expect {
+		t.Errorf("smushChar %q + %q made %q, expected %q", l, c, string((*line).art[0]), expect)
 	}
 }
 

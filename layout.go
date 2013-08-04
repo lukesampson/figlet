@@ -2,7 +2,7 @@ package main
 
 import (
 	"strings"
-	//"fmt"
+	"fmt"
 )
 
 // smush modes
@@ -32,6 +32,8 @@ const (
 func smushem(lch rune, rch rune, s settings) rune {
 	if lch == ' ' { return rch }
 	if rch == ' ' { return lch }
+
+	fmt.Printf("smushem %q + %q\n", lch, rch)
 
 	if s.smushmode & SMSmush == 0 { // smush not enabled
 		return 0
@@ -95,6 +97,8 @@ func smushem(lch rune, rch rune, s settings) rune {
 // smushamt returns the maximum amount that the character can be smushed
 // into the line.
 func smushamt(char *figText, line *figText, s settings) int {
+	//fmt.Println(line)
+	//fmt.Println(char)
 	if s.smushmode & (SMSmush | SMKern) == 0 {
 		return 0;
   	}
@@ -119,19 +123,24 @@ func smushamt(char *figText, line *figText, s settings) int {
 
 		// the amount of smushing possible just by removing empty spaces
 		rowsmush := j + i
+		//fmt.Printf("j: %v, i: %v, rowsmush: %v\n", j, i, rowsmush)
 
 		if i < len(left) && j < len(right) {
 			// see if we can smush it even further
 			lch := left[len(left) - 1 - i]
 			rch := right[j]
 			if !empty(lch) && !empty(rch) {
-				if smushem(lch, rch, s) != 0 { rowsmush++ }
+				if smushem(lch, rch, s) != 0 {
+					//fmt.Printf("managed to smush %q + %q (%v)\n", lch, rch, s.smushmode)
+					rowsmush++
+				}
 			}
 		}
 
 		if rowsmush < maxsmush { maxsmush = rowsmush }
 	}
 
+	//fmt.Printf("maxsmush: %v\n", maxsmush)
 	return maxsmush;
 }
 
@@ -157,6 +166,8 @@ func smushChar(char *figText, line *figText, amount int, s settings) figText {
 
 	linelen := result.width()
 
+	//fmt.Println("smushamount", amount)
+
 	for row := 0; row < char.height(); row++ {
 		left, right := &(*result).art[row], &(*char).art[row]
 		if s.rtol {
@@ -167,14 +178,17 @@ func smushChar(char *figText, line *figText, amount int, s settings) figText {
 			column := linelen - amount + k
 			if column < 0 { column = 0 }
 
+			rch := (*right)[k]
+			
 			if column >= len(*left) {
-				continue // assume a space is on the right, absorb it
+				if rch == ' ' { continue } // absorb space
+				*left = append(*left, ' ')
 			}
 
 			lch := (*left)[column]
-			rch := (*right)[k]
-
 			smushed := smushem(lch, rch, s)			
+
+			//fmt.Printf("row %v, col %v, lch %q, rch %q, smushed %q\n", row, column, lch, rch, smushed)
 			(*left)[column] = smushed
 
 		}
@@ -247,7 +261,10 @@ func getLines(msg string, f font, maxwidth int, s settings) []figText {
 	for i, word := range words {
 		// add a space between words
 		if i > 0 {
-			lineWithSpace := addChar(getChar(' ', f), &lines[linenum], s) 
+			//fmt.Println(getChar('t', f))
+			//fmt.Println(getChar(' ', f))
+			lineWithSpace := addChar(getChar(' ', f), &lines[linenum], s)
+			//fmt.Println(&lineWithSpace)
 			if lineWithSpace.width() <= maxwidth {
 				lines[linenum] = lineWithSpace
 			}
