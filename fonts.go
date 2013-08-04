@@ -55,7 +55,7 @@ type fontHeader struct {
 	maxlen int
 	smush int
 	cmtlines int
-	right2left int
+	right2left bool
 	smush2 int
 }
 
@@ -86,7 +86,7 @@ func readHeader(header string) (fontHeader, error) {
 	h.cmtlines = nums[4]
 
 	// these are optional for backwards compatibility
-	if len(nums) > 5 { h.right2left = nums[5] }
+	if len(nums) > 5 { h.right2left = nums[5] != 0 }
 	if len(nums) > 6 { h.smush2 = nums[6] }
 
 	// if no smush2, decode smush into smush2

@@ -75,7 +75,11 @@ func main() {
 	s := settings {
 		smushmode: f.header.smush2,
 		hardblank: '$',
-		rtol: *reverse }
+		rtol: f.header.right2left }
+
+	if *reverse {
+		s.rtol = !s.rtol
+	}
 
 	maxwidth := *outputWidth
 
