@@ -42,6 +42,9 @@ FIGlet assumes an 80 character wide terminal. Use this to specify a different ou
 `-m smushmode`
 Use a different "smush mode". Smush modes control how Figlet "smushes" together the big letters for output. This option is only really useful if you're making a font and need to experiment with the various settings—usually the font author has already specified the smush mode that works best with that font. You can find more information on smush modes in [figfont.txt](https://raw.github.com/lukesampson/figlet/master/figfont.txt), although this version of figfont.txt is written for the C version.
 
+`-list`
+Lists the available fonts, with a preview of each.
+
 `message`
 The message you want to print out. If you don't specify one, Figlet will go into interactive mode where it waits for you to enter a line of text and then prints it out in large letters. You can do this as many times as you like, and use Ctrl-C to quit.
 
