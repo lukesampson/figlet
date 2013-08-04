@@ -30,7 +30,7 @@ func printHelp() {
 }
 
 func printVersion() {
-	fmt.Println("Figlet version go-1.0")
+	fmt.Println("Figlet version: go-1.0")
 	dir, err := findFonts()
 	if err != nil {
 		dir = fmt.Sprintf("ERROR: couldn't find fonts: %v", err)
