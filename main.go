@@ -15,7 +15,7 @@ const (
 )
 
 func printUsage() {
-	fmt.Println("Usage: figlet [ -lcrR ] [ -f fontfile ]")
+	fmt.Println("Usage: figlet [ -lcrhR ] [ -f fontfile ]")
 	fmt.Println("              [ -w outputwidth ] [ -m smushmode ]")
 	fmt.Println("              [ message ]")
 	fmt.Println()
