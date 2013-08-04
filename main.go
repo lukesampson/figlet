@@ -78,9 +78,7 @@ func main() {
 		for {
 			msg, err = reader.ReadString('\n')
 			if err != nil {
-				if err == io.EOF {
-					os.Exit(0)
-				}
+				if err == io.EOF { os.Exit(0) }
 				msg = ""
 			}
 			lines := getLines(msg, f, maxwidth, s)
