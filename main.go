@@ -15,8 +15,8 @@ const (
 )
 
 func printusage() {
-	fmt.Println("Usage: figlet [ -clrvR ]")
-	fmt.Println("              [ -f fontfile ] [ -w outputwidth ] [ -m smushmode ]")
+	fmt.Println("Usage: figlet [ -lcrhvR ] [ -f fontfile ]")
+	fmt.Println("              [ -w outputwidth ] [ -m smushmode ]")
 	fmt.Println("              [ message ]")
 }
 
@@ -44,13 +44,18 @@ func printLines(lines []figText, hardblank rune, maxwidth int, align string) {
 	}
 }
 
+func printMsg(msg string, f font, maxwidth int, s settings, align string) {
+	lines := getLines(msg, f, maxwidth, s)
+	printLines(lines, s.hardblank, maxwidth, align)
+}
+
 func main() {
-	fontname := flag.String("f", defaultFont, "use this font")
-	rtol := flag.Bool("R", false, "reverse output")
+	// options
+	fontname := flag.String("f", defaultFont, "name of font to use")
+	reverse := flag.Bool("R", false, "reverse output")
 	alignRight := flag.Bool("r", false, "right-align output")
 	alignCenter := flag.Bool("c", false, "center-align output")
-	outputwidth := flag.Int("w", 80, "output width")
-
+	outputWidth := flag.Int("w", 80, "output width")
 	flag.Parse()
 
 	var align string
@@ -70,9 +75,9 @@ func main() {
 	s := settings {
 		smushmode: f.header.smush2,
 		hardblank: '$',
-		rtol: *rtol }
+		rtol: *reverse }
 
-	maxwidth := *outputwidth
+	maxwidth := *outputWidth
 
 	if(msg == "") {
 		reader := bufio.NewReader(os.Stdin)
@@ -82,12 +87,8 @@ func main() {
 				if err == io.EOF { os.Exit(0) }
 				msg = ""
 			}
-			lines := getLines(msg, f, maxwidth, s)
-			printLines(lines, s.hardblank, maxwidth, align)
+			printMsg(msg, f, maxwidth, s, align)
 		}
 	}
-
-	lines := getLines(msg, f, maxwidth, s)
-	printLines(lines, s.hardblank, maxwidth, align)
-
+	printMsg(msg, f, maxwidth, s, align)
 }
