@@ -14,19 +14,19 @@ const (
 	defaultFont = "standard"
 )
 
-func printusage() {
+func printUsage() {
 	fmt.Println("Usage: figlet [ -lcrR ] [ -f fontfile ]")
 	fmt.Println("              [ -w outputwidth ] [ -m smushmode ]")
 	fmt.Println("              [ message ]")
 	fmt.Println()
-	fmt.Println("Show help:")
-	fmt.Println("       figlet -h")
-	fmt.Println()
 	fmt.Println("Show available fonts:")
 	fmt.Println("       figlet -list")
+}
+
+func printHelp() {
+	printUsage()
 	fmt.Println()
-	fmt.Println("Print version:")
-	fmt.Println("       figlet -v")
+	fmt.Println("For more info see https://github.com/lukesampson/figlet")
 }
 
 func printLines(lines []figText, hardblank rune, maxwidth int, align string) {
@@ -88,11 +88,15 @@ func main() {
 	alignCenter := flag.Bool("c", false, "center-align output")
 	outputWidth := flag.Int("w", 80, "output width")
 	list := flag.Bool("list", false, "list available fonts")
+	help := flag.Bool("h", false, "show help")
 	flag.Parse()
 
 	if *list {
-		listFonts()
-		os.Exit(0)
+		listFonts(); os.Exit(0)
+	}
+
+	if *help {
+		printHelp(); os.Exit(0)
 	}
 
 	var align string
