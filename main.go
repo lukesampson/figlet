@@ -29,6 +29,15 @@ func printHelp() {
 	fmt.Println("For more info see https://github.com/lukesampson/figlet")
 }
 
+func printVersion() {
+	fmt.Println("Figlet version go-1.0")
+	dir, err := findFonts()
+	if err != nil {
+		dir = fmt.Sprintf("ERROR: couldn't find fonts: %v", err)
+	}
+	fmt.Printf("Fonts: %v\n", dir)
+}
+
 func printLines(lines []figText, hardblank rune, maxwidth int, align string) {
 	padleft := func(linelen int) {
 		switch align {
@@ -89,6 +98,7 @@ func main() {
 	outputWidth := flag.Int("w", 80, "output width")
 	list := flag.Bool("list", false, "list available fonts")
 	help := flag.Bool("h", false, "show help")
+	version := flag.Bool("v", false, "show version info")
 	flag.Parse()
 
 	if *list {
@@ -97,6 +107,10 @@ func main() {
 
 	if *help {
 		printHelp(); os.Exit(0)
+	}
+
+	if *version {
+		printVersion(); os.Exit(0)
 	}
 
 	var align string
