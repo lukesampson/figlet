@@ -15,9 +15,18 @@ const (
 )
 
 func printusage() {
-	fmt.Println("Usage: figlet [ -lcrhvR ] [ -f fontfile ]")
+	fmt.Println("Usage: figlet [ -lcrR ] [ -f fontfile ]")
 	fmt.Println("              [ -w outputwidth ] [ -m smushmode ]")
 	fmt.Println("              [ message ]")
+	fmt.Println()
+	fmt.Println("Show help:")
+	fmt.Println("       figlet -h")
+	fmt.Println()
+	fmt.Println("Show available fonts:")
+	fmt.Println("       figlet -list")
+	fmt.Println()
+	fmt.Println("Print version:")
+	fmt.Println("       figlet -v")
 }
 
 func printLines(lines []figText, hardblank rune, maxwidth int, align string) {
@@ -49,6 +58,28 @@ func printMsg(msg string, f font, maxwidth int, s settings, align string) {
 	printLines(lines, s.hardblank, maxwidth, align)
 }
 
+func listFonts() {
+	fontsdir, err := findFonts()
+	if err != nil {
+		fmt.Println(err); os.Exit(1)
+	}
+
+	fmt.Printf("Fonts in %v:\n", fontsdir)
+
+	for _, fontname := range fontNames(fontsdir) {
+		fmt.Printf("%v:\n", fontname)
+		fpath, _ := findFont(fontsdir, fontname)
+		f, err := readFont(fpath)
+		if err != nil {
+			fmt.Println(err)
+		}
+		s := (&f).settings()
+
+		printMsg(fontname, f, 80, s, "left")
+		fmt.Println()
+	}
+}
+
 func main() {
 	// options
 	fontname := flag.String("f", defaultFont, "name of font to use")
@@ -56,7 +87,13 @@ func main() {
 	alignRight := flag.Bool("r", false, "right-align output")
 	alignCenter := flag.Bool("c", false, "center-align output")
 	outputWidth := flag.Int("w", 80, "output width")
+	list := flag.Bool("list", false, "list available fonts")
 	flag.Parse()
+
+	if *list {
+		listFonts()
+		os.Exit(0)
+	}
 
 	var align string
 	if *alignRight {
@@ -72,11 +109,7 @@ func main() {
 
 	msg := strings.Join(flag.Args(), " ")
 
-	s := settings {
-		smushmode: f.header.smush2,
-		hardblank: '$',
-		rtol: f.header.right2left }
-
+	s := f.settings()
 	if *reverse {
 		s.rtol = !s.rtol
 	}

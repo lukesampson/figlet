@@ -39,6 +39,24 @@ func findFonts() (string, error) {
 	return "", errors.New("couldn't find fonts directory")
 }
 
+func fontNames(dir string) []string {
+	names := make([]string, 0)
+
+	fis, err := ioutil.ReadDir(dir)
+	if err != nil {
+		fmt.Println(err); os.Exit(1)
+	}
+
+	for _, fi := range(fis) {
+		name := fi.Name()
+		if(strings.HasSuffix(name, ".flf")) {
+			names = append(names, strings.TrimSuffix(name, ".flf"))
+		}
+	}
+
+	return names
+}
+
 func findFont(dir string, font string) (string, error) {
 	if !strings.HasSuffix(font, ".flf") { font += ".flf" }
 	path := filepath.Join(dir, font)
@@ -49,7 +67,7 @@ func findFont(dir string, font string) (string, error) {
 }
 
 type fontHeader struct {
-	hardblank string
+	hardblank rune
 	charheight int
 	baseline int
 	maxlen int
@@ -68,7 +86,7 @@ func readHeader(header string) (fontHeader, error) {
 	}
 
 	headerParts := strings.Split(header[len(magic_num):], " ")
-	h.hardblank = headerParts[0]
+	h.hardblank = []rune(headerParts[0])[0]
 
 	nums := make([]int, len(headerParts)-1)
 	for i, s := range headerParts[1:] {
@@ -196,4 +214,11 @@ func getFont(name string) (font, error) {
 	}
 
 	return f, nil
+}
+
+func (f *font) settings() settings {
+	return settings {
+		smushmode: f.header.smush2,
+		hardblank: f.header.hardblank,
+		rtol: f.header.right2left }
 }
