@@ -51,11 +51,11 @@ func findFont(dir string, font string) (string, error) {
 type fontHeader struct {
 	hardblank string
 	charheight int
-	baseLine int
+	baseline int
 	maxlen int
 	smush int
-	commentLines int
-	printDirection int
+	cmtlines int
+	right2left int
 	smush2 int
 }
 
@@ -80,13 +80,13 @@ func readHeader(header string) (fontHeader, error) {
 	}
 
 	h.charheight = nums[0]
-	h.baseLine = nums[1]
+	h.baseline = nums[1]
 	h.maxlen = nums[2]
 	h.smush = nums[3]
-	h.commentLines = nums[4]
+	h.cmtlines = nums[4]
 
 	// these are optional for backwards compatibility
-	if len(nums) > 5 { h.printDirection = nums[5] }
+	if len(nums) > 5 { h.right2left = nums[5] }
 	if len(nums) > 6 { h.smush2 = nums[6] }
 
 	// if no smush2, decode smush into smush2
@@ -143,11 +143,11 @@ func readFont(file string) (font, error) {
 	f.header, err = readHeader(lines[0])
 	if err != nil { return f, err }
 
-	f.comment = strings.Join(lines[1:f.header.commentLines+1], "\n")
+	f.comment = strings.Join(lines[1:f.header.cmtlines+1], "\n")
 
 	f.chars = make(map[rune] [][]rune)
 	charheight := int(f.header.charheight)
-	currline := int(f.header.commentLines)+1
+	currline := int(f.header.cmtlines)+1
 	
 	// allocate 0, the 'missing' character
 	f.chars[0] = make([][]rune, charheight)

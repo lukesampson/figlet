@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"os"
 	"strings"
 	"flag"
@@ -70,6 +72,21 @@ func main() {
 		rtol: *rtol }
 
 	maxwidth := 80
+
+	if(msg == "") {
+		reader := bufio.NewReader(os.Stdin)
+		for {
+			msg, err = reader.ReadString('\n')
+			if err != nil {
+				if err == io.EOF {
+					os.Exit(0)
+				}
+				msg = ""
+			}
+			lines := getLines(msg, f, maxwidth, s)
+			printLines(lines, s.hardblank, maxwidth, align)
+		}
+	}
 
 	lines := getLines(msg, f, maxwidth, s)
 	printLines(lines, s.hardblank, maxwidth, align)

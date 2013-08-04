@@ -37,7 +37,7 @@ func smushem(lch rune, rch rune, s settings) rune {
 		return 0
 	}
 
-	if s.smushmode & SMKern == 0 { // smush but not kern
+	if (s.smushmode & 63) == 0 {
 		// This is smushing by universal overlapping
 
 		// ensure overlapping preference to visible chars (spaces handled already)
@@ -243,7 +243,7 @@ func getLines(msg string, f font, maxwidth int, s settings) []figText {
 		// add a space between words
 		if i > 0 {
 			// don't smush space
-			lineWithSpace := smushChar(getChar(' ', f), &lines[linenum], 0, s)
+			lineWithSpace := addChar(getChar(' ', f), &lines[linenum], s)
 			if lineWithSpace.width() <= maxwidth {
 				lines[linenum] = lineWithSpace
 			}
