@@ -38,7 +38,7 @@ func smushem(lch rune, rch rune, s settings) rune {
 	}
 
 	if (s.smushmode & 63) == 0 {
-		// This is smushing by universal overlapping
+		// Nothing set below 64: this is smushing by universal overlapping
 
 		// ensure overlapping preference to visible chars (spaces handled already)
 		if lch == s.hardblank { return rch }

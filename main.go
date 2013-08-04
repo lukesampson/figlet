@@ -15,9 +15,9 @@ const (
 )
 
 func printusage() {
-	fmt.Println("Usage: figlet [ -cklnoprstvxDELNRSWX ] [ -d fontdirectory ]")
-	fmt.Println("              [ -f fontfile ] [ -m smushmode ] [ -w outputwidth ]")
-	fmt.Println("              [ -I infocode ] [ message ]")
+	fmt.Println("Usage: figlet [ -clrvR ]")
+	fmt.Println("              [ -f fontfile ] [ -w outputwidth ] [ -m smushmode ]")
+	fmt.Println("              [ message ]")
 }
 
 func printLines(lines []figText, hardblank rune, maxwidth int, align string) {
@@ -49,6 +49,7 @@ func main() {
 	rtol := flag.Bool("R", false, "reverse output")
 	alignRight := flag.Bool("r", false, "right-align output")
 	alignCenter := flag.Bool("c", false, "center-align output")
+	outputwidth := flag.Int("w", 80, "output width")
 
 	flag.Parse()
 
@@ -71,7 +72,7 @@ func main() {
 		hardblank: '$',
 		rtol: *rtol }
 
-	maxwidth := 80
+	maxwidth := *outputwidth
 
 	if(msg == "") {
 		reader := bufio.NewReader(os.Stdin)
