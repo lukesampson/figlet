@@ -134,8 +134,7 @@ func main() {
 	}
 
 	maxwidth := *outputWidth
-
-	if(msg == "") {
+	if msg == "" {
 		reader := bufio.NewReader(os.Stdin)
 		for {
 			msg, err = reader.ReadString('\n')
