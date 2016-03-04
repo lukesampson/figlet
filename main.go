@@ -7,10 +7,11 @@ import (
 	"os"
 	"strings"
 	"flag"
+
+	"./figletlib"
 )
 
 const (
-	pkgName = "github.com/lukesampson/figlet"
 	defaultFont = "standard"
 )
 
@@ -31,14 +32,14 @@ func printHelp() {
 
 func printVersion() {
 	fmt.Println("Figlet version: go-1.0")
-	dir, err := findFonts()
+	dir, err := figletlib.FindFonts()
 	if err != nil {
 		dir = fmt.Sprintf("ERROR: couldn't find fonts: %v", err)
 	}
 	fmt.Printf("Fonts: %v\n", dir)
 }
 
-func printLines(lines []figText, hardblank rune, maxwidth int, align string) {
+func printLines(lines []figletlib.FigText, hardblank rune, maxwidth int, align string) {
 	padleft := func(linelen int) {
 		switch align {
 		case "right":
@@ -49,7 +50,7 @@ func printLines(lines []figText, hardblank rune, maxwidth int, align string) {
 	}
 
 	for _, line := range lines {
-		for _, subline := range line.art {
+		for _, subline := range line.Art() {
 			padleft(len(subline))
 			for _, outchar := range subline {
 				if outchar == hardblank { outchar = ' '}
@@ -62,27 +63,27 @@ func printLines(lines []figText, hardblank rune, maxwidth int, align string) {
 	}
 }
 
-func printMsg(msg string, f font, maxwidth int, s settings, align string) {
-	lines := getLines(msg, f, maxwidth, s)
-	printLines(lines, s.hardblank, maxwidth, align)
+func printMsg(msg string, f figletlib.Font, maxwidth int, s figletlib.Settings, align string) {
+	lines := figletlib.GetLines(msg, f, maxwidth, s)
+	printLines(lines, s.HardBlank(), maxwidth, align)
 }
 
 func listFonts() {
-	fontsdir, err := findFonts()
+	fontsdir, err := figletlib.FindFonts()
 	if err != nil {
 		fmt.Println(err); os.Exit(1)
 	}
 
 	fmt.Printf("Fonts in %v:\n", fontsdir)
 
-	for _, fontname := range fontNames(fontsdir) {
+	for _, fontname := range figletlib.FontNames(fontsdir) {
 		fmt.Printf("%v:\n", fontname)
-		fpath, _ := findFont(fontsdir, fontname)
-		f, err := readFont(fpath)
+		fpath, _ := figletlib.FindFont(fontsdir, fontname)
+		f, err := figletlib.ReadFont(fpath)
 		if err != nil {
 			fmt.Println(err)
 		}
-		s := (&f).settings()
+		s := (&f).Settings()
 
 		printMsg(fontname, f, 80, s, "left")
 		fmt.Println()
@@ -120,16 +121,16 @@ func main() {
 		align = "center"
 	}
 
-	f, err := getFont(*fontname)
+	f, err := figletlib.GetFont(*fontname)
 	if err != nil {
 		fmt.Println(err); os.Exit(1)
 	}
 
 	msg := strings.Join(flag.Args(), " ")
 
-	s := f.settings()
+	s := f.Settings()
 	if *reverse {
-		s.rtol = !s.rtol
+		s.SetRtoL(true)
 	}
 
 	maxwidth := *outputWidth

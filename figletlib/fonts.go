@@ -1,4 +1,4 @@
-package main
+package figletlib
 
 import (
 	"errors"
@@ -12,10 +12,14 @@ import (
 	"strings"
 )
 
+const (
+	pkgName = "github.com/lukesampson/figlet"
+)
+
 // Ä Ö Ü ä ö ü ß
 var deutsch = []rune { 196, 214, 220, 228, 246, 252, 223 };
 
-func findFonts() (string, error) {
+func FindFonts() (string, error) {
 	// try <bindir>/fonts
 	bin := os.Args[0]
 	if !filepath.IsAbs(bin) {
@@ -39,7 +43,7 @@ func findFonts() (string, error) {
 	return "", errors.New("couldn't find fonts directory")
 }
 
-func fontNames(dir string) []string {
+func FontNames(dir string) []string {
 	names := make([]string, 0)
 
 	fis, err := ioutil.ReadDir(dir)
@@ -57,7 +61,7 @@ func fontNames(dir string) []string {
 	return names
 }
 
-func findFont(dir string, font string) (string, error) {
+func FindFont(dir string, font string) (string, error) {
 	if !strings.HasSuffix(font, ".flf") { font += ".flf" }
 	path := filepath.Join(dir, font)
 	if _, err := os.Stat(path); err == nil {
@@ -125,7 +129,7 @@ func readFontChar(lines []string, currline int, height int) [][]rune {
 	char := make([][]rune, height)
 	for row := 0; row < height; row++ {
 		line := lines[currline+row]
-		
+
 		k := len(line) - 1
 
 		// remove any trailing whitespace after end char
@@ -144,14 +148,22 @@ func readFontChar(lines []string, currline int, height int) [][]rune {
 	return char
 }
 
-type font struct {
+type Font struct {
 	header fontHeader
 	comment string
 	chars map[rune] [][]rune
 }
 
-func readFont(file string) (font, error) {
-	f := font {}
+func (f *Font) Settings() Settings {
+	return Settings{
+		smushmode: f.header.smush2,
+		hardblank: f.header.hardblank,
+		rtol: f.header.right2left,
+	}
+}
+
+func ReadFont(file string) (Font, error) {
+	f := Font{}
 
 	bytes, err := ioutil.ReadFile(file)
 	if err != nil { return f, err }
@@ -166,7 +178,7 @@ func readFont(file string) (font, error) {
 	f.chars = make(map[rune] [][]rune)
 	charheight := int(f.header.charheight)
 	currline := int(f.header.cmtlines)+1
-	
+
 	// allocate 0, the 'missing' character
 	f.chars[0] = make([][]rune, charheight)
 
@@ -193,32 +205,25 @@ func readFont(file string) (font, error) {
 		currline += charheight
 	}
 
-	
-	return f, nil
-}
-
-func getFont(name string) (font, error) {
-	fontsdir, err := findFonts()
-	if err != nil {
-		return font { }, err
-	}
-
-	fontpath, err := findFont(fontsdir, name)
-	if err != nil {
-		return font { }, err
-	}
-	
-	f, err := readFont(fontpath)
-	if err != nil {
-		return font { }, err
-	}
 
 	return f, nil
 }
 
-func (f *font) settings() settings {
-	return settings {
-		smushmode: f.header.smush2,
-		hardblank: f.header.hardblank,
-		rtol: f.header.right2left }
+func GetFont(name string) (Font, error) {
+	fontsdir, err := FindFonts()
+	if err != nil {
+		return Font{}, err
+	}
+
+	fontpath, err := FindFont(fontsdir, name)
+	if err != nil {
+		return Font{}, err
+	}
+
+	f, err := ReadFont(fontpath)
+	if err != nil {
+		return Font{}, err
+	}
+
+	return f, nil
 }

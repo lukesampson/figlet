@@ -1,4 +1,4 @@
-package main
+package figletlib
 
 import (
 	"fmt"
@@ -15,7 +15,7 @@ func outputMode(mode int) {
 	modemap["SMHardBlank"] = SMHardBlank
 	modemap["SMKern"] = SMKern
 	modemap["SMSmush"] = SMSmush
-	
+
 	for name := range modemap {
 		m := modemap[name]
 		if (mode & m) != 0 {
