@@ -32,7 +32,7 @@ func printHelp() {
 
 func printVersion() {
 	fmt.Println("Figlet version: go-1.0")
-	dir, err := figletlib.FindFonts()
+	dir, err := figletlib.FindFontsDirectory()
 	if err != nil {
 		dir = fmt.Sprintf("ERROR: couldn't find fonts: %v", err)
 	}
@@ -69,7 +69,7 @@ func printMsg(msg string, f figletlib.Font, maxwidth int, s figletlib.Settings, 
 }
 
 func listFonts() {
-	fontsdir, err := figletlib.FindFonts()
+	fontsdir, err := figletlib.FindFontsDirectory()
 	if err != nil {
 		fmt.Println(err); os.Exit(1)
 	}
