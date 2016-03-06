@@ -2,6 +2,7 @@
 package figletlib
 
 import (
+  "bytes"
   "fmt"
   "io"
   "os"
@@ -49,4 +50,11 @@ func FPrintMsg(w io.Writer, msg string, f *Font, maxwidth int, s Settings, align
 
 func PrintMsg(msg string, f *Font, maxwidth int, s Settings, align string) {
   FPrintMsg(os.Stdout, msg, f, maxwidth, s, align)
+}
+
+
+func SprintMsg(msg string, f *Font, maxwidth int, s Settings, align string) string {
+  buf := bytes.NewBufferString("")
+  FPrintMsg(buf, msg, f, maxwidth, s, align)
+  return buf.String()
 }
