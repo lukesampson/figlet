@@ -200,7 +200,7 @@ func smushChar(char *FigText, line *FigText, amount int, s Settings) FigText {
 
 // gets the font entry for the given character, or the 'missing'
 // character if the font doesn't contain this character
-func getChar(c rune, f Font) *FigText {
+func getChar(c rune, f *Font) *FigText {
 	 l, ok := f.chars[c]
 	 if !ok {
 		l = f.chars[0]
@@ -208,7 +208,7 @@ func getChar(c rune, f Font) *FigText {
 	 return &FigText { text: string(c), art: l }
 }
 
-func getWord(w string, f Font, s Settings) *FigText {
+func getWord(w string, f *Font, s Settings) *FigText {
 	word := newFigText(f.header.charheight)
 	for _, c := range w {
 		c := getChar(c, f)
@@ -218,7 +218,7 @@ func getWord(w string, f Font, s Settings) *FigText {
 	return word
 }
 
-func getWords(msg string, f Font, s Settings) []FigText {
+func getWords(msg string, f *Font, s Settings) []FigText {
 	words := make([]FigText, 0)
 	for _, word := range strings.Split(msg, " ") {
 		words = append(words, *getWord(word, f, s))
@@ -226,7 +226,7 @@ func getWords(msg string, f Font, s Settings) []FigText {
 	return words
 }
 
-func breakWord(word *FigText, maxwidth int, f Font, s Settings) (*FigText, *FigText) {
+func breakWord(word *FigText, maxwidth int, f *Font, s Settings) (*FigText, *FigText) {
 	h := word.height()
 	a, b := word, newFigText(h)
 
@@ -240,7 +240,7 @@ func breakWord(word *FigText, maxwidth int, f Font, s Settings) (*FigText, *FigT
 	return a, b
 }
 
-func GetLines(msg string, f Font, maxwidth int, s Settings) []FigText {
+func GetLines(msg string, f *Font, maxwidth int, s Settings) []FigText {
 	lines := make([]FigText, 1)
 	words := getWords(msg, f, s)
 

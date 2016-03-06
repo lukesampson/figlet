@@ -105,20 +105,25 @@ func (f *Font) Settings() Settings {
 	}
 }
 
-func ReadFont(filename string) (Font, error) {
-	f := Font{}
-
+func ReadFont(filename string) (*Font, error) {
 	bytes, err := ioutil.ReadFile(filename)
-	if err != nil { return f, err }
+	if err != nil {
+		return nil, err
+	}
 
 	lines := strings.Split(string(bytes), "\n")
 
-	f.header, err = readHeader(lines[0])
-	if err != nil { return f, err }
+	header, err := readHeader(lines[0])
+	if err != nil {
+		return nil, err
+	}
 
-	f.comment = strings.Join(lines[1:f.header.cmtlines+1], "\n")
+	f := Font{
+		header: header,
+		comment: strings.Join(lines[1:header.cmtlines+1], "\n"),
+		chars: make(map[rune] [][]rune),
+	}
 
-	f.chars = make(map[rune] [][]rune)
 	charheight := int(f.header.charheight)
 	currline := int(f.header.cmtlines)+1
 
@@ -141,13 +146,15 @@ func ReadFont(filename string) (Font, error) {
 	for currline < len(lines) {
 		var code int;
 		_, err := fmt.Sscan(lines[currline], &code)
-		if err != nil { break }
+		if err != nil {
+			break
+		}
+
 		currline++
 		f.chars[rune(code)] = readFontChar(lines, currline, charheight)
 
 		currline += charheight
 	}
 
-
-	return f, nil
+	return &f, nil
 }
