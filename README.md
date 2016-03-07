@@ -78,7 +78,7 @@ These command-line options aren't supported in this version:
 Too complicated!
 
 `-f fontdirectory`
-This version just uses the "fonts" directory in the same directory as the `figlet` executable.
+This version tries to find the "fonts" directory in the same directory as the `figlet` executable. If you keep your fonts elsewhere, you can supply the `-p` flag.
 
 `-C controlfile`
 Control files aren't supported, for reasons given above.
@@ -88,3 +88,37 @@ Not supported
 
 `-R`
 This is supported, but it behaves differently in this version. In the original it meant "Right-to-left" print direction. In this version it means "Reverse" the print direction, as specified in the font file. Most times the font file is what you want, so this is mainly for testing and as a gimmick to confuse people.
+
+
+### Use as a library
+
+You can generate your own text at runtime using `figletlib`.
+
+Here's an example of how to write to an arbitrary output stream, eg. `http.ResponseWriter`:
+
+    import (
+      "fmt"
+      "net/http"
+      "os"
+      "path/filepath"
+
+      "github.com/lukesampson/figlet/figletlib"
+    )
+
+    func init() {
+      http.HandleFunc("/", handler)
+    }
+
+    func handler(w http.ResponseWriter, r *http.Request) {
+      cwd, _ := os.Getwd()
+      fontsdir := filepath.Join(cwd, "fonts")
+
+      f, err := figletlib.GetFontByName(fontsdir, "slant")
+      if err != nil {
+        w.Header().Set("Content-Type", "text/plain")
+        fmt.Fprintln(w, "Could not find that font!")
+        return
+      }
+
+      figletlib.FPrintMsg(w, "Hello, world!", f, 80, f.Settings(), "left")
+    }
