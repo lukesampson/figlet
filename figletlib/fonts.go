@@ -8,24 +8,22 @@ import (
 	"strings"
 )
 
-
 // Ä Ö Ü ä ö ü ß
-var deutsch = []rune { 196, 214, 220, 228, 246, 252, 223 };
-
+var deutsch = []rune{196, 214, 220, 228, 246, 252, 223}
 
 type fontHeader struct {
-	hardblank rune
+	hardblank  rune
 	charheight int
-	baseline int
-	maxlen int
-	smush int
-	cmtlines int
+	baseline   int
+	maxlen     int
+	smush      int
+	cmtlines   int
 	right2left bool
-	smush2 int
+	smush2     int
 }
 
 func readHeader(header string) (fontHeader, error) {
-	h := fontHeader {}
+	h := fontHeader{}
 
 	magic_num := "flf2a"
 	if !strings.HasPrefix(header, magic_num) {
@@ -51,8 +49,12 @@ func readHeader(header string) (fontHeader, error) {
 	h.cmtlines = nums[4]
 
 	// these are optional for backwards compatibility
-	if len(nums) > 5 { h.right2left = nums[5] != 0 }
-	if len(nums) > 6 { h.smush2 = nums[6] }
+	if len(nums) > 5 {
+		h.right2left = nums[5] != 0
+	}
+	if len(nums) > 6 {
+		h.smush2 = nums[6]
+	}
 
 	// if no smush2, decode smush into smush2
 	if len(nums) < 7 {
@@ -77,12 +79,16 @@ func readFontChar(lines []string, currline int, height int) [][]rune {
 
 		// remove any trailing whitespace after end char
 		ws := regexp.MustCompile(`\s`)
-		for k > 0 && ws.MatchString(line[k:k+1]) { k-- }
+		for k > 0 && ws.MatchString(line[k:k+1]) {
+			k--
+		}
 
 		if k > 0 {
 			// remove end marks
 			endchar := line[k]
-			for k > 0 && line[k] == endchar { k-- }
+			for k > 0 && line[k] == endchar {
+				k--
+			}
 		}
 
 		char[row] = []rune(line[:k+1])
@@ -92,16 +98,16 @@ func readFontChar(lines []string, currline int, height int) [][]rune {
 }
 
 type Font struct {
-	header fontHeader
+	header  fontHeader
 	comment string
-	chars map[rune] [][]rune
+	chars   map[rune][][]rune
 }
 
 func (f *Font) Settings() Settings {
 	return Settings{
 		smushmode: f.header.smush2,
 		hardblank: f.header.hardblank,
-		rtol: f.header.right2left,
+		rtol:      f.header.right2left,
 	}
 }
 
@@ -119,13 +125,13 @@ func ReadFont(filename string) (*Font, error) {
 	}
 
 	f := Font{
-		header: header,
+		header:  header,
 		comment: strings.Join(lines[1:header.cmtlines+1], "\n"),
-		chars: make(map[rune] [][]rune),
+		chars:   make(map[rune][][]rune),
 	}
 
 	charheight := int(f.header.charheight)
-	currline := int(f.header.cmtlines)+1
+	currline := int(f.header.cmtlines) + 1
 
 	// allocate 0, the 'missing' character
 	f.chars[0] = make([][]rune, charheight)
@@ -144,7 +150,7 @@ func ReadFont(filename string) (*Font, error) {
 
 	// code-tagged characters
 	for currline < len(lines) {
-		var code int;
+		var code int
 		_, err := fmt.Sscan(lines[currline], &code)
 		if err != nil {
 			break

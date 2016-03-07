@@ -1,12 +1,12 @@
 package figletlib
 
 type FigText struct {
-	art [][]rune
+	art  [][]rune
 	text string
 }
 
 func newFigText(height int) *FigText {
-	return &FigText { art: make([][]rune, height) }
+	return &FigText{art: make([][]rune, height)}
 }
 
 func (ft *FigText) width() int {
@@ -26,7 +26,7 @@ func (ft *FigText) String() string {
 }
 
 func (ft *FigText) Art() [][]rune {
-	return ft.art;
+	return ft.art
 }
 
 func (ft *FigText) copy() *FigText {
@@ -43,4 +43,3 @@ func (ft *FigText) copy() *FigText {
 
 	return copied
 }
-
