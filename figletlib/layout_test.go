@@ -1,4 +1,4 @@
-package main
+package figletlib
 
 import (
 	"testing"
@@ -192,8 +192,8 @@ func testSmushCharLine(l string, c string, amount int, expect string, t *testing
 	}
 }
 
-func testSettings(smushmode int) settings {
-	return settings {
+func testSettings(smushmode int) Settings {
+	return Settings{
 		smushmode: smushmode,
 		hardblank: '$',
 		rtol: false,

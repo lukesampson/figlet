@@ -1,23 +1,23 @@
-package main
+package figletlib
 
-type figText struct {
+type FigText struct {
 	art [][]rune
 	text string
 }
 
-func newFigText(height int) *figText {
-	return &figText { art: make([][]rune, height) }
+func newFigText(height int) *FigText {
+	return &FigText { art: make([][]rune, height) }
 }
 
-func (ft *figText) width() int {
+func (ft *FigText) width() int {
 	return len(ft.art[0])
 }
 
-func (ft *figText) height() int {
+func (ft *FigText) height() int {
 	return len(ft.art)
 }
 
-func (ft *figText) String() string {
+func (ft *FigText) String() string {
 	str := ""
 	for _, line := range ft.art {
 		str += string(line) + "\n"
@@ -25,7 +25,11 @@ func (ft *figText) String() string {
 	return str
 }
 
-func (ft *figText) copy() *figText {
+func (ft *FigText) Art() [][]rune {
+	return ft.art;
+}
+
+func (ft *FigText) copy() *FigText {
 	copied := newFigText(ft.height())
 
 	(*copied).text = (*ft).text

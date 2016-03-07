@@ -7,10 +7,11 @@ import (
 	"os"
 	"strings"
 	"flag"
+
+	"./figletlib"
 )
 
 const (
-	pkgName = "github.com/lukesampson/figlet"
 	defaultFont = "standard"
 )
 
@@ -29,62 +30,23 @@ func printHelp() {
 	fmt.Println("For more info see https://github.com/lukesampson/figlet")
 }
 
-func printVersion() {
+func printVersion(fontsdir string) {
 	fmt.Println("Figlet version: go-1.0")
-	dir, err := findFonts()
-	if err != nil {
-		dir = fmt.Sprintf("ERROR: couldn't find fonts: %v", err)
-	}
-	fmt.Printf("Fonts: %v\n", dir)
+	fmt.Printf("Fonts: %v\n", fontsdir)
 }
 
-func printLines(lines []figText, hardblank rune, maxwidth int, align string) {
-	padleft := func(linelen int) {
-		switch align {
-		case "right":
-			fmt.Print(strings.Repeat(" ", maxwidth - linelen))
-		case "center":
-			fmt.Print(strings.Repeat(" ", (maxwidth - linelen) / 2))
-		}
-	}
-
-	for _, line := range lines {
-		for _, subline := range line.art {
-			padleft(len(subline))
-			for _, outchar := range subline {
-				if outchar == hardblank { outchar = ' '}
-				fmt.Printf("%c", outchar)
-			}
-			if len(subline) < maxwidth && align != "right" {
-				fmt.Println()
-			}
-		}
-	}
-}
-
-func printMsg(msg string, f font, maxwidth int, s settings, align string) {
-	lines := getLines(msg, f, maxwidth, s)
-	printLines(lines, s.hardblank, maxwidth, align)
-}
-
-func listFonts() {
-	fontsdir, err := findFonts()
-	if err != nil {
-		fmt.Println(err); os.Exit(1)
-	}
-
+func listFonts(fontsdir string) {
 	fmt.Printf("Fonts in %v:\n", fontsdir)
-
-	for _, fontname := range fontNames(fontsdir) {
+	fonts, _ := figletlib.FontNamesInDir(fontsdir)
+	for _, fontname := range fonts {
 		fmt.Printf("%v:\n", fontname)
-		fpath, _ := findFont(fontsdir, fontname)
-		f, err := readFont(fpath)
+		f, err := figletlib.GetFontByName(fontsdir, fontname)
 		if err != nil {
 			fmt.Println(err)
 		}
-		s := (&f).settings()
 
-		printMsg(fontname, f, 80, s, "left")
+		s := f.Settings()
+		figletlib.PrintMsg(fontname, f, 80, s, "left")
 		fmt.Println()
 	}
 }
@@ -99,10 +61,20 @@ func main() {
 	list := flag.Bool("list", false, "list available fonts")
 	help := flag.Bool("h", false, "show help")
 	version := flag.Bool("v", false, "show version info")
+	fontsDirectory := flag.String("d", "", "fonts directory")
 	flag.Parse()
 
+	fontsdir := *fontsDirectory
+	if fontsdir == "" {
+		fontsdir = figletlib.GuessFontsDirectory()
+		if fontsdir == "" {
+			fmt.Println("ERROR: couldn't find fonts directory, specify -d")
+			os.Exit(1)
+		}
+	}
+
 	if *list {
-		listFonts(); os.Exit(0)
+		listFonts(fontsdir); os.Exit(0)
 	}
 
 	if *help {
@@ -110,7 +82,7 @@ func main() {
 	}
 
 	if *version {
-		printVersion(); os.Exit(0)
+		printVersion(fontsdir); os.Exit(0)
 	}
 
 	var align string
@@ -120,21 +92,21 @@ func main() {
 		align = "center"
 	}
 
-	f, err := getFont(*fontname)
+	f, err := figletlib.GetFontByName(fontsdir, *fontname)
 	if err != nil {
-		fmt.Println(err); os.Exit(1)
+		fmt.Println("ERROR: couldn't find font", *fontname, "in dir", fontsdir)
+		os.Exit(1)
 	}
 
 	msg := strings.Join(flag.Args(), " ")
 
-	s := f.settings()
+	s := f.Settings()
 	if *reverse {
-		s.rtol = !s.rtol
+		s.SetRtoL(true)
 	}
 
 	maxwidth := *outputWidth
-
-	if(msg == "") {
+	if msg == "" {
 		reader := bufio.NewReader(os.Stdin)
 		for {
 			msg, err = reader.ReadString('\n')
@@ -142,8 +114,8 @@ func main() {
 				if err == io.EOF { os.Exit(0) }
 				msg = ""
 			}
-			printMsg(msg, f, maxwidth, s, align)
+			figletlib.PrintMsg(msg, f, maxwidth, s, align)
 		}
 	}
-	printMsg(msg, f, maxwidth, s, align)
+	figletlib.PrintMsg(msg, f, maxwidth, s, align)
 }

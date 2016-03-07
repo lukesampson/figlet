@@ -1,70 +1,17 @@
-package main
+package figletlib
 
 import (
-	"errors"
 	"fmt"
-	"go/build"
 	"io/ioutil"
-	"os"
-	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
 )
 
+
 // Ä Ö Ü ä ö ü ß
 var deutsch = []rune { 196, 214, 220, 228, 246, 252, 223 };
 
-func findFonts() (string, error) {
-	// try <bindir>/fonts
-	bin := os.Args[0]
-	if !filepath.IsAbs(bin) {
-		return "", fmt.Errorf("find fonts: bin path %v is not absolute", bin)
-	}
-	bindir := filepath.Dir(bin)
-	fonts := filepath.Join(bindir, "fonts")
-	if _, err := os.Stat(fonts); err == nil {
-		return fonts, nil
-	}
-
-	// try src directory
-	ctx := build.Default
-	if p, err := ctx.Import(pkgName, "", build.FindOnly); err == nil {
-		fonts := filepath.Join(p.Dir, "fonts")
-		if _, err := os.Stat(fonts); err == nil {
-			return fonts, nil
-		}
-	}
-
-	return "", errors.New("couldn't find fonts directory")
-}
-
-func fontNames(dir string) []string {
-	names := make([]string, 0)
-
-	fis, err := ioutil.ReadDir(dir)
-	if err != nil {
-		fmt.Println(err); os.Exit(1)
-	}
-
-	for _, fi := range(fis) {
-		name := fi.Name()
-		if(strings.HasSuffix(name, ".flf")) {
-			names = append(names, strings.TrimSuffix(name, ".flf"))
-		}
-	}
-
-	return names
-}
-
-func findFont(dir string, font string) (string, error) {
-	if !strings.HasSuffix(font, ".flf") { font += ".flf" }
-	path := filepath.Join(dir, font)
-	if _, err := os.Stat(path); err == nil {
-		return path, nil
-	}
-	return "", fmt.Errorf("couldn't find font %v in %v", font, dir)
-}
 
 type fontHeader struct {
 	hardblank rune
@@ -125,7 +72,7 @@ func readFontChar(lines []string, currline int, height int) [][]rune {
 	char := make([][]rune, height)
 	for row := 0; row < height; row++ {
 		line := lines[currline+row]
-		
+
 		k := len(line) - 1
 
 		// remove any trailing whitespace after end char
@@ -144,29 +91,42 @@ func readFontChar(lines []string, currline int, height int) [][]rune {
 	return char
 }
 
-type font struct {
+type Font struct {
 	header fontHeader
 	comment string
 	chars map[rune] [][]rune
 }
 
-func readFont(file string) (font, error) {
-	f := font {}
+func (f *Font) Settings() Settings {
+	return Settings{
+		smushmode: f.header.smush2,
+		hardblank: f.header.hardblank,
+		rtol: f.header.right2left,
+	}
+}
 
-	bytes, err := ioutil.ReadFile(file)
-	if err != nil { return f, err }
+func ReadFont(filename string) (*Font, error) {
+	bytes, err := ioutil.ReadFile(filename)
+	if err != nil {
+		return nil, err
+	}
 
 	lines := strings.Split(string(bytes), "\n")
 
-	f.header, err = readHeader(lines[0])
-	if err != nil { return f, err }
+	header, err := readHeader(lines[0])
+	if err != nil {
+		return nil, err
+	}
 
-	f.comment = strings.Join(lines[1:f.header.cmtlines+1], "\n")
+	f := Font{
+		header: header,
+		comment: strings.Join(lines[1:header.cmtlines+1], "\n"),
+		chars: make(map[rune] [][]rune),
+	}
 
-	f.chars = make(map[rune] [][]rune)
 	charheight := int(f.header.charheight)
 	currline := int(f.header.cmtlines)+1
-	
+
 	// allocate 0, the 'missing' character
 	f.chars[0] = make([][]rune, charheight)
 
@@ -186,39 +146,15 @@ func readFont(file string) (font, error) {
 	for currline < len(lines) {
 		var code int;
 		_, err := fmt.Sscan(lines[currline], &code)
-		if err != nil { break }
+		if err != nil {
+			break
+		}
+
 		currline++
 		f.chars[rune(code)] = readFontChar(lines, currline, charheight)
 
 		currline += charheight
 	}
 
-	
-	return f, nil
-}
-
-func getFont(name string) (font, error) {
-	fontsdir, err := findFonts()
-	if err != nil {
-		return font { }, err
-	}
-
-	fontpath, err := findFont(fontsdir, name)
-	if err != nil {
-		return font { }, err
-	}
-	
-	f, err := readFont(fontpath)
-	if err != nil {
-		return font { }, err
-	}
-
-	return f, nil
-}
-
-func (f *font) settings() settings {
-	return settings {
-		smushmode: f.header.smush2,
-		hardblank: f.header.hardblank,
-		rtol: f.header.right2left }
+	return &f, nil
 }

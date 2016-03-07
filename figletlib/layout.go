@@ -1,4 +1,4 @@
-package main
+package figletlib
 
 import (
 	"strings"
@@ -29,7 +29,7 @@ const (
 // 8: [ + ] -> |, { + } -> |, ( + ) -> |
 // 16: / + \ -> X, > + < -> X (only in that order)
 // 32: hardblank + hardblank -> hardblank
-func smushem(lch rune, rch rune, s settings) rune {
+func smushem(lch rune, rch rune, s Settings) rune {
 	if lch == ' ' { return rch }
 	if rch == ' ' { return lch }
 
@@ -94,7 +94,7 @@ func smushem(lch rune, rch rune, s settings) rune {
 
 // smushamt returns the maximum amount that the character can be smushed
 // into the line.
-func smushamt(char *figText, line *figText, s settings) int {
+func smushamt(char *FigText, line *FigText, s Settings) int {
 	if s.smushmode & (SMSmush | SMKern) == 0 {
 		return 0;
   	}
@@ -134,20 +134,29 @@ func smushamt(char *figText, line *figText, s settings) int {
 	return maxsmush;
 }
 
-type settings struct {
+type Settings struct {
 	smushmode int
 	hardblank rune
 	rtol bool
 }
 
+func (s *Settings) HardBlank() rune {
+	return s.hardblank;
+}
+
+func (s *Settings) SetRtoL(rtol bool) {
+	s.rtol = rtol
+}
+
+
 // Adds the given character onto the end of the given line.
-func addChar(char *figText, line *figText, s settings) figText {
+func addChar(char *FigText, line *FigText, s Settings) FigText {
 	smushamount := smushamt(char, line, s)
 	return smushChar(char, line, smushamount, s)
 }
 
-func smushChar(char *figText, line *figText, amount int, s settings) figText {
-	var result *figText
+func smushChar(char *FigText, line *FigText, amount int, s Settings) FigText {
+	var result *FigText
 	if s.rtol {
 		result = char.copy()
 	} else {
@@ -167,7 +176,7 @@ func smushChar(char *figText, line *figText, amount int, s settings) figText {
 			if column < 0 { column = 0 }
 
 			rch := (*right)[k]
-			
+
 			if column >= len(*left) { // left is zero-length
 				// use rch if not space, absorb space otherwise
 				if rch != ' ' {
@@ -177,7 +186,7 @@ func smushChar(char *figText, line *figText, amount int, s settings) figText {
 			}
 
 			lch := (*left)[column]
-			smushed := smushem(lch, rch, s)			
+			smushed := smushem(lch, rch, s)
 
 			//fmt.Printf("row %v, col %v, lch %q, rch %q, smushed %q\n", row, column, lch, rch, smushed)
 			(*left)[column] = smushed
@@ -191,15 +200,15 @@ func smushChar(char *figText, line *figText, amount int, s settings) figText {
 
 // gets the font entry for the given character, or the 'missing'
 // character if the font doesn't contain this character
-func getChar(c rune, f font) *figText {
+func getChar(c rune, f *Font) *FigText {
 	 l, ok := f.chars[c]
 	 if !ok {
 		l = f.chars[0]
 	 }
-	 return &figText { text: string(c), art: l }
+	 return &FigText { text: string(c), art: l }
 }
 
-func getWord(w string, f font, s settings) *figText {
+func getWord(w string, f *Font, s Settings) *FigText {
 	word := newFigText(f.header.charheight)
 	for _, c := range w {
 		c := getChar(c, f)
@@ -209,15 +218,15 @@ func getWord(w string, f font, s settings) *figText {
 	return word
 }
 
-func getWords(msg string, f font, s settings) []figText {
-	words := make([]figText, 0)
+func getWords(msg string, f *Font, s Settings) []FigText {
+	words := make([]FigText, 0)
 	for _, word := range strings.Split(msg, " ") {
 		words = append(words, *getWord(word, f, s))
 	}
 	return words
 }
 
-func breakWord(word *figText, maxwidth int, f font, s settings) (*figText, *figText) {
+func breakWord(word *FigText, maxwidth int, f *Font, s Settings) (*FigText, *FigText) {
 	h := word.height()
 	a, b := word, newFigText(h)
 
@@ -231,8 +240,8 @@ func breakWord(word *figText, maxwidth int, f font, s settings) (*figText, *figT
 	return a, b
 }
 
-func getLines(msg string, f font, maxwidth int, s settings) []figText {
-	lines := make([]figText, 1)
+func GetLines(msg string, f *Font, maxwidth int, s Settings) []FigText {
+	lines := make([]FigText, 1)
 	words := getWords(msg, f, s)
 
 	// make empty first line
@@ -251,7 +260,7 @@ func getLines(msg string, f font, maxwidth int, s settings) []figText {
 
 		// check if we need to wrap
 		if lines[linenum].width() + word.width() > maxwidth { // need to wrap
-			lines = append(lines, figText { art: make([][]rune, f.header.charheight) })
+			lines = append(lines, FigText{art: make([][]rune, f.header.charheight) })
 
 			if word.width() > maxwidth {
 				a, b := breakWord(&word, maxwidth - lines[linenum].width(), f, s)
