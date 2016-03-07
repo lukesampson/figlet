@@ -5,14 +5,14 @@ import (
 )
 
 func Test_smush_with_lch_empty_always_returns_rch(t *testing.T) {
-	rchs := []rune { 'a', '!', '$' }
+	rchs := []rune{'a', '!', '$'}
 	for _, rch := range rchs {
 		testSmushemAllSmushModes(t, ' ', rch, rch)
 	}
 }
 
 func Test_smush_with_rch_empty_always_returns_lch(t *testing.T) {
-	lchs := []rune { 'a', '!', '$' }
+	lchs := []rune{'a', '!', '$'}
 	for _, lch := range lchs {
 		testSmushemAllSmushModes(t, lch, ' ', lch)
 	}
@@ -70,7 +70,7 @@ func Test_smush_doesnt_combine_any_hardblank_when_not_SMHardBlank(t *testing.T) 
 }
 
 func Test_smush_equal(t *testing.T) {
-	if x := smushem('x', 'x', testSettings(SMSmush + SMKern + SMEqual)); x != 'x' {
+	if x := smushem('x', 'x', testSettings(SMSmush+SMKern+SMEqual)); x != 'x' {
 		t.Errorf("expected 'x', returned %q", x)
 	}
 }
@@ -196,18 +196,18 @@ func testSettings(smushmode int) Settings {
 	return Settings{
 		smushmode: smushmode,
 		hardblank: '$',
-		rtol: false,
+		rtol:      false,
 	}
 }
 
 func testSmushLowLine(l rune, r rune, expect rune, t *testing.T) {
-	testSmush(l, r, SMKern + SMSmush + SMLowLine, expect, t)
+	testSmush(l, r, SMKern+SMSmush+SMLowLine, expect, t)
 }
 func testSmushHierarchy(l rune, r rune, expect rune, t *testing.T) {
-	testSmush(l, r, SMKern + SMSmush + SMHierarchy, expect, t)
+	testSmush(l, r, SMKern+SMSmush+SMHierarchy, expect, t)
 }
 func testSmushPair(l rune, r rune, expect rune, t *testing.T) {
-	testSmush(l, r, SMKern + SMSmush + SMPair, expect, t)
+	testSmush(l, r, SMKern+SMSmush+SMPair, expect, t)
 }
 func testSmush(l rune, r rune, mode int, expect rune, t *testing.T) {
 	if x := smushem(l, r, testSettings(mode)); x != expect {
@@ -216,7 +216,7 @@ func testSmush(l rune, r rune, mode int, expect rune, t *testing.T) {
 }
 
 func validSmushModes() []int {
-	modes := make([]int, 0, 36 + 1)
+	modes := make([]int, 0, 36+1)
 	modes = append(modes, 0)
 	for i := 1; i <= 128; i *= 2 {
 		modes = append(modes, i)

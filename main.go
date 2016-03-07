@@ -2,11 +2,11 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"io"
 	"os"
 	"strings"
-	"flag"
 
 	"./figletlib"
 )
@@ -74,15 +74,18 @@ func main() {
 	}
 
 	if *list {
-		listFonts(fontsdir); os.Exit(0)
+		listFonts(fontsdir)
+		os.Exit(0)
 	}
 
 	if *help {
-		printHelp(); os.Exit(0)
+		printHelp()
+		os.Exit(0)
 	}
 
 	if *version {
-		printVersion(fontsdir); os.Exit(0)
+		printVersion(fontsdir)
+		os.Exit(0)
 	}
 
 	var align string
@@ -111,7 +114,9 @@ func main() {
 		for {
 			msg, err = reader.ReadString('\n')
 			if err != nil {
-				if err == io.EOF { os.Exit(0) }
+				if err == io.EOF {
+					os.Exit(0)
+				}
 				msg = ""
 			}
 			figletlib.PrintMsg(msg, f, maxwidth, s, align)

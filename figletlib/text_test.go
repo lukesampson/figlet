@@ -1,14 +1,14 @@
 package figletlib
 
 import (
-	"testing"
 	"fmt"
+	"testing"
 )
 
 func TestCopy(t *testing.T) {
 	a := &FigText{
 		text: "test",
-		art: [][]rune {
+		art: [][]rune{
 			[]rune("ABC"),
 			[]rune("DEF"),
 		},
