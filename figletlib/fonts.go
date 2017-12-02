@@ -117,6 +117,10 @@ func ReadFont(filename string) (*Font, error) {
 		return nil, err
 	}
 
+	return ReadFontFromBytes(bytes)
+}
+
+func ReadFontFromBytes(bytes []byte) (*Font, error) {
 	lines := strings.Split(string(bytes), "\n")
 
 	header, err := readHeader(lines[0])
