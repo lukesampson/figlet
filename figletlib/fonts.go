@@ -30,7 +30,8 @@ func readHeader(header string) (fontHeader, error) {
 		return h, fmt.Errorf("invalid font header: %v", header)
 	}
 
-	headerParts := strings.Split(header[len(magic_num):], " ")
+	trimmedHeader := strings.TrimSpace(header[len(magic_num):])
+	headerParts := strings.Split(trimmedHeader, " ")
 	h.hardblank = []rune(headerParts[0])[0]
 
 	nums := make([]int, len(headerParts)-1)
