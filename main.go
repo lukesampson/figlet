@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/lukesampson/figlet/figletlib"
@@ -16,16 +17,14 @@ const (
 )
 
 func printUsage() {
-	fmt.Println("Usage: figlet [ -lcrhR ] [ -f fontfile ]")
+	fmt.Println("Usage: figlet [ -lcrhR ] [ -f fontfile ] [ -I infocode ]")
 	fmt.Println("              [ -w outputwidth ] [ -m smushmode ]")
 	fmt.Println("              [ message ]")
-	fmt.Println()
-	fmt.Println("Show available fonts:")
-	fmt.Println("       figlet -list")
 }
 
 func printHelp() {
 	printUsage()
+	flag.PrintDefaults()
 	fmt.Println()
 	fmt.Println("For more info see https://github.com/lukesampson/figlet")
 }
@@ -33,6 +32,10 @@ func printHelp() {
 func printVersion(fontsdir string) {
 	fmt.Println("Figlet version: go-1.0")
 	fmt.Printf("Fonts: %v\n", fontsdir)
+}
+
+func printInfoCode(infocode int, infodata []string) {
+	fmt.Println(infodata[infocode])
 }
 
 func listFonts(fontsdir string) {
@@ -62,8 +65,12 @@ func main() {
 	help := flag.Bool("h", false, "show help")
 	version := flag.Bool("v", false, "show version info")
 	fontsDirectory := flag.String("d", "", "fonts directory")
+	infoCode := flag.Int("I", -1, "infocode")
+	infoCode2 := flag.Bool("I2", false, "show default font directory")
+	infoCode3 := flag.Bool("I3", false, "show default font")
+	infoCode4 := flag.Bool("I4", false, "show output width")
+	infoCode5 := flag.Bool("I5", false, "show supported font formats")
 	flag.Parse()
-
 	fontsdir := *fontsDirectory
 	if fontsdir == "" {
 		fontsdir = figletlib.GuessFontsDirectory()
@@ -106,6 +113,28 @@ func main() {
 	s := f.Settings()
 	if *reverse {
 		s.SetRtoL(true)
+	}
+
+	ic := *infoCode
+
+	if *infoCode2 {
+		ic = 2
+	} else if *infoCode3 {
+		ic = 3
+	} else if *infoCode4 {
+		ic = 4
+	} else if *infoCode5 {
+		ic = 5
+	}
+
+	if ic > 1 && ic < 6 {
+		outputWidthString := strconv.Itoa(*outputWidth)
+		var infoData = []string{2: fontsdir, 3: *fontname, 4: outputWidthString, 5: "flf2"}
+		printInfoCode(ic, infoData)
+		os.Exit(0)
+	} else if ic != -1 {
+		fmt.Println("ERROR: invalid infocode", ic)
+		os.Exit(1)
 	}
 
 	maxwidth := *outputWidth
